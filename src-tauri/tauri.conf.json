@@ -1,0 +1,64 @@
+{
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "devPath": "http://localhost:3000",
+    "distDir": "../out",
+    "withGlobalTauri": true
+  },
+  "package": {
+    "productName": "desktop-tasks",
+    "version": "0.1.0"
+  },
+  "tauri": {
+    "allowlist": {
+      "all": false,
+      "fs": {
+        "all": true,
+        "scope": ["$APP_DATA/*", "$APP_DATA/tasks_tree.json", "$APP_DATA/config.json", "$APP_DATA/tarefas.txt"]
+      },
+      "path": {
+        "all": true
+      },
+      "shell": {
+        "all": false,
+        "open": true
+      },
+      "window": {
+        "all": true
+      }
+    },
+    "bundle": {
+      "active": true,
+      "targets": "all",
+      "identifier": "com.nexit.desktop-tasks",
+      "icon": [
+        "icons/32x32.png",
+        "icons/128x128.png",
+        "icons/icon.icns",
+        "icons/icon.ico"
+      ]
+    },
+    "security": {
+      "csp": null
+    },
+    "windows": [
+      {
+        "fullscreen": false,
+        "resizable": true,
+        "title": "Desktop Tasks",
+        "width": 400,
+        "height": 600,
+        "x": 20,
+        "y": 20,
+        "decorations": false,
+        "transparent": true,
+        "alwaysOnTop": false,
+        "skipTaskbar": true,
+        "minimizable": false,
+        "maximizable": false,
+        "closable": true
+      }
+    ]
+  }
+}
