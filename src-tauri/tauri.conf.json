@@ -15,7 +15,7 @@
       "all": false,
       "fs": {
         "all": true,
-        "scope": ["$APP_DATA/*", "$APP_DATA/tasks_tree.json", "$APP_DATA/config.json", "$APP_DATA/tarefas.txt"]
+        "scope": ["$APPDATA/*", "$APPDATA/**"]
       },
       "path": {
         "all": true

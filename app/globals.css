@@ -33,6 +33,7 @@ html, body {
 }
 
 @layer utilities {
+  /* Animações Legado */
   .animate-in-up {
     animation: enter-up 0.3s ease-out forwards;
   }
@@ -49,5 +50,24 @@ html, body {
   @keyframes exit-down {
     from { opacity: 1; transform: translateY(0); }
     to { opacity: 0; transform: translateY(10px); }
+  }
+
+  /* Novas Animações para Popovers (Mimetizando tailwindcss-animate) */
+  .animate-in.fade-in {
+    animation: fade-in 0.2s ease-out forwards;
+  }
+
+  .animate-in.zoom-in-95 {
+    animation: zoom-in-95 0.2s ease-out cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes zoom-in-95 {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
   }
 }

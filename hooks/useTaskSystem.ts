@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { writeTextFile, readTextFile, exists, BaseDirectory } from '@tauri-apps/api/fs';
+import { writeTextFile, readTextFile, exists, createDir, BaseDirectory } from '@tauri-apps/api/fs';
 import { TaskNode, AppConfig } from '@/types';
 import { generateId, updateTree, deleteFromTree, addToTree } from '@/utils/treeHelpers';
 
@@ -21,19 +21,39 @@ export const useTaskSystem = () => {
           const txt = await readTextFile(DATA_FILE, { dir: BaseDirectory.AppData });
           setTasks(JSON.parse(txt));
         }
-      } catch (err) { console.error(err); }
+      } catch (err) {
+        console.error('Failed to load data:', err);
+      }
     };
     load();
   }, []);
 
+  const ensureDataDir = async () => {
+    try {
+      await createDir('', { dir: BaseDirectory.AppData, recursive: true });
+    } catch (err) {
+      console.error('Error creating dir:', err);
+    }
+  };
+
   const persistTasks = async (newTasks: TaskNode[]) => {
     setTasks(newTasks);
-    await writeTextFile(DATA_FILE, JSON.stringify(newTasks), { dir: BaseDirectory.AppData });
+    try {
+      await ensureDataDir();
+      await writeTextFile(DATA_FILE, JSON.stringify(newTasks), { dir: BaseDirectory.AppData });
+    } catch (err) {
+      console.error('Failed to save tasks:', err);
+    }
   };
 
   const persistConfig = async (newConfig: AppConfig) => {
     setConfig(newConfig);
-    await writeTextFile(CONFIG_FILE, JSON.stringify(newConfig), { dir: BaseDirectory.AppData });
+    try {
+      await ensureDataDir();
+      await writeTextFile(CONFIG_FILE, JSON.stringify(newConfig), { dir: BaseDirectory.AppData });
+    } catch (err) {
+      console.error('Failed to save config:', err);
+    }
   };
 
   const addTask = (text: string, parentId: string | null) => {

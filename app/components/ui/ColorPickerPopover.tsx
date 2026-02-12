@@ -1,4 +1,5 @@
-import { HexColorPicker } from 'react-colorful';
+import React from 'react';
+import { Check, X, Palette } from 'lucide-react';
 import SmartPopover from './SmartPopover';
 
 interface ColorPickerPopoverProps {
@@ -7,32 +8,52 @@ interface ColorPickerPopoverProps {
   onClose: () => void;
 }
 
+const PRESET_COLORS = [
+  '#ef4444', // Red
+  '#f97316', // Orange
+  '#eab308', // Yellow
+  '#22c55e', // Green
+  '#06b6d4', // Cyan
+  '#3b82f6', // Blue
+  '#a855f7', // Purple
+  '#ec4899', // Pink
+  '#71717a', // Zinc
+  '#ffffff', // White
+];
+
 export default function ColorPickerPopover({ color, onChange, onClose }: ColorPickerPopoverProps) {
   return (
     <SmartPopover onClose={onClose}>
-      <div className="p-4 flex flex-col items-center justify-center bg-[#1e1f22]">
-        <style jsx global>{`
-          .react-colorful { width: 100% !important; min-width: 240px; height: 200px !important; }
-          .react-colorful__saturation { border-radius: 8px 8px 0 0; }
-          .react-colorful__hue { height: 24px; border-radius: 0 0 8px 8px; margin-top: 8px; }
-          .react-colorful__pointer { width: 20px; height: 20px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
-        `}</style>
-        
-        <HexColorPicker color={color} onChange={onChange} />
-        
-        <div className="mt-4 flex items-center gap-2 bg-black/40 p-2 rounded-lg border border-white/5 w-full">
-          <div 
-            className="w-8 h-8 rounded border border-white/10 shadow-sm" 
-            style={{ backgroundColor: color }}
-          />
-          <div className="flex flex-col flex-1">
-             <input 
-                type="text" 
-                value={color}
-                onChange={(e) => onChange(e.target.value)}
-                className="bg-transparent text-sm text-white font-mono w-full outline-none uppercase"
-            />
+      <div className="w-[280px] p-4">
+        <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-2">
+          <div className="flex items-center gap-2 text-gray-200">
+            <Palette size={16} />
+            <span className="text-sm font-semibold">Cor da Tarefa</span>
           </div>
+          <button 
+            onClick={onClose}
+            className="text-gray-500 hover:text-white transition-colors"
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-5 gap-3">
+          {PRESET_COLORS.map((preset) => (
+            <button
+              key={preset}
+              onClick={() => onChange(preset)}
+              className={`
+                w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 ring-2 ring-offset-2 ring-offset-[#191919]
+                ${color === preset ? 'ring-white shadow-[0_0_10px_rgba(255,255,255,0.3)]' : 'ring-transparent hover:ring-white/20'}
+              `}
+              style={{ backgroundColor: preset }}
+            >
+              {color === preset && (
+                <Check size={16} className={preset === '#ffffff' ? 'text-black' : 'text-white'} strokeWidth={3} />
+              )}
+            </button>
+          ))}
         </div>
       </div>
     </SmartPopover>

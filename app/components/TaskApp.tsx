@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useTaskSystem } from '@/hooks/useTaskSystem';
+import { useWindowState } from '@/hooks/useWindowState';
 import Header from './Header';
 import Settings from './Settings';
 import TaskItem from './TaskItem';
@@ -12,11 +13,14 @@ import ColorPickerPopover from './ui/ColorPickerPopover';
 import DatePickerPopover from './ui/DatePickerPopover';
 
 export default function TaskApp() {
+  // Hooks de Sistema (Lógica e Persistência)
+  useWindowState();
   const { tasks, config, addTask, updateTaskProp, removeTask, setConfig } = useTaskSystem();
+
+  // Estado Local de UI
   const [showSettings, setShowSettings] = useState(false);
   const [focusedTaskId, setFocusedTaskId] = useState<string | null>(null);
 
-  // Estado para controlar qual popover está aberto (e os dados dele)
   const [activePopover, setActivePopover] = useState<{
     type: 'color' | 'date';
     nodeId: string;
@@ -87,25 +91,21 @@ export default function TaskApp() {
         />
       )}
 
-      {/* MODAL COLOR PICKER */}
       {activePopover?.type === 'color' && (
         <ColorPickerPopover 
           color={activePopover.value}
           onChange={(newColor) => {
             updateTaskProp(activePopover.nodeId, { color: newColor });
-            // Atualiza o visual instantaneamente enquanto arrasta
             setActivePopover(prev => prev ? {...prev, value: newColor} : null);
           }}
           onClose={handleClosePopover}
         />
       )}
 
-      {/* MODAL DATE PICKER */}
       {activePopover?.type === 'date' && (
         <DatePickerPopover 
-          selectedDate={activePopover.value}
-          accentColor={activePopover.type === 'date' ? tasks.find(t => findNodeColor(tasks, activePopover.nodeId))?.color : undefined}
-          onChange={(newDate) => {
+          currentDate={activePopover.value}
+          onSelect={(newDate) => {
              updateTaskProp(activePopover.nodeId, { dueDate: newDate });
              handleClosePopover();
           }}
@@ -116,15 +116,4 @@ export default function TaskApp() {
       <ResizeHandle />
     </main>
   );
-}
-
-function findNodeColor(nodes: any[], targetId: string): string | undefined {
-    for (const node of nodes) {
-        if (node.id === targetId) return node.color;
-        if (node.children) {
-            const found = findNodeColor(node.children, targetId);
-            if (found) return found;
-        }
-    }
-    return undefined;
 }

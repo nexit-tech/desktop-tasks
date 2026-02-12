@@ -1,199 +1,165 @@
-import { DayPicker } from 'react-day-picker';
+import React, { useState, useEffect } from 'react';
+import { 
+  format, addMonths, subMonths, startOfMonth, endOfMonth, 
+  startOfWeek, endOfWeek, addDays, isSameMonth, isSameDay, parseISO, isToday 
+} from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { format, addDays, nextMonday } from 'date-fns';
-import { Calendar as CalendarIcon, Sun, CalendarDays, XCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Trash2, Calendar as CalendarIcon, X } from 'lucide-react';
 import SmartPopover from './SmartPopover';
 
 interface DatePickerPopoverProps {
-  selectedDate?: string;
-  onChange: (dateStr: string) => void;
+  currentDate?: string;
+  onSelect: (date: string) => void;
   onClose: () => void;
-  accentColor?: string; 
 }
 
-export default function DatePickerPopover({ selectedDate, onChange, onClose, accentColor }: DatePickerPopoverProps) {
-  const parsedDate = selectedDate ? new Date(selectedDate) : undefined;
-  const today = new Date();
-  
-  const activeColor = accentColor || '#a1a1aa'; 
-  const activeTextColor = accentColor ? '#000000' : '#ffffff';
+export default function DatePickerPopover({ currentDate, onSelect, onClose }: DatePickerPopoverProps) {
+  const [viewDate, setViewDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-  const handleSelect = (date: Date | undefined) => {
-    if (date) {
-      onChange(format(date, 'yyyy-MM-dd'));
-      onClose();
+  useEffect(() => {
+    if (currentDate) {
+      const parsed = parseISO(currentDate);
+      if (!isNaN(parsed.getTime())) {
+        setSelectedDate(parsed);
+        setViewDate(parsed);
+      }
     }
+  }, [currentDate]);
+
+  const onPrevMonth = () => setViewDate(subMonths(viewDate, 1));
+  const onNextMonth = () => setViewDate(addMonths(viewDate, 1));
+
+  const handleDayClick = (day: Date) => {
+    onSelect(format(day, 'yyyy-MM-dd'));
+    onClose();
   };
 
-  const QuickButton = ({ label, icon: Icon, onClick, active }: any) => (
-    <button 
-      onClick={onClick}
-      className="flex flex-col items-center justify-center p-2 rounded-md border transition-all text-xs gap-1.5 w-full font-medium"
-      style={{
-        backgroundColor: active ? activeColor : 'rgba(255,255,255,0.05)',
-        borderColor: active ? activeColor : 'transparent',
-        color: active ? activeTextColor : '#9ca3af'
-      }}
-    >
-      <Icon size={14} />
-      <span>{label}</span>
-    </button>
-  );
+  const handleClear = () => {
+    onSelect('');
+    onClose();
+  };
+
+  const renderDays = () => {
+    const dateFormat = "eeeee";
+    const days = [];
+    let startDate = startOfWeek(viewDate, { weekStartsOn: 0 });
+
+    for (let i = 0; i < 7; i++) {
+      days.push(
+        <div key={i} className="text-xs text-gray-500 font-medium text-center py-2 uppercase">
+          {format(addDays(startDate, i), dateFormat, { locale: ptBR })}
+        </div>
+      );
+    }
+
+    return <div className="grid grid-cols-7 mb-1">{days}</div>;
+  };
+
+  const renderCells = () => {
+    const monthStart = startOfMonth(viewDate);
+    const monthEnd = endOfMonth(monthStart);
+    const startDate = startOfWeek(monthStart, { weekStartsOn: 0 });
+    const endDate = endOfWeek(monthEnd, { weekStartsOn: 0 });
+
+    const rows = [];
+    let days = [];
+    let day = startDate;
+    let formattedDate = "";
+
+    while (day <= endDate) {
+      for (let i = 0; i < 7; i++) {
+        formattedDate = format(day, 'd');
+        const cloneDay = day;
+        const isSelected = selectedDate ? isSameDay(day, selectedDate) : false;
+        const isCurrentMonth = isSameMonth(day, monthStart);
+        const isCurrentDay = isToday(day);
+
+        days.push(
+          <div
+            key={day.toString()}
+            onClick={() => handleDayClick(cloneDay)}
+            className={`
+              relative p-2 cursor-pointer text-center text-sm rounded-lg transition-all duration-200
+              ${!isCurrentMonth ? 'text-gray-700' : 'text-gray-300 hover:bg-white/10 hover:text-white'}
+              ${isSelected ? '!bg-white !text-black font-bold shadow-sm' : ''}
+              ${isCurrentDay && !isSelected ? 'ring-1 ring-white/20' : ''}
+            `}
+          >
+            <span>{formattedDate}</span>
+          </div>
+        );
+        day = addDays(day, 1);
+      }
+      rows.push(
+        <div key={day.toString()} className="grid grid-cols-7 gap-y-1">
+          {days}
+        </div>
+      );
+      days = [];
+    }
+    return <div>{rows}</div>;
+  };
 
   return (
     <SmartPopover onClose={onClose}>
-      <div className="p-4 w-[320px] max-w-full bg-[#1e1f22]">
-        <div className="grid grid-cols-3 gap-2 mb-3">
-          <QuickButton 
-            label="Hoje" 
-            icon={CalendarIcon} 
-            active={selectedDate === format(today, 'yyyy-MM-dd')}
-            onClick={() => handleSelect(today)} 
-          />
-          <QuickButton 
-            label="Amanhã" 
-            icon={Sun} 
-            active={selectedDate === format(addDays(today, 1), 'yyyy-MM-dd')}
-            onClick={() => handleSelect(addDays(today, 1))} 
-          />
-          <QuickButton 
-            label="Segunda" 
-            icon={CalendarDays} 
-            onClick={() => handleSelect(nextMonday(today))} 
-          />
+      <div className="w-[320px] p-4">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-2">
+          <div className="flex items-center gap-2 text-gray-200">
+            <CalendarIcon size={16} />
+            <span className="text-sm font-semibold">Definir Data</span>
+          </div>
+          <button 
+            onClick={onClose}
+            className="text-gray-500 hover:text-white transition-colors"
+          >
+            <X size={16} />
+          </button>
         </div>
 
-        <div className="border-t border-white/10 my-3" />
-
-        <style jsx global>{`
-          .rdp {
-            --rdp-cell-size: 40px;
-            margin: 0;
-            width: 100%;
-          }
-          .rdp-month {
-            width: 100%;
-          }
-          .rdp-caption {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 8px;
-            margin-bottom: 10px;
-          }
-          .rdp-caption_label {
-            font-size: 1rem;
-            font-weight: 700;
-            text-transform: capitalize;
-            color: white;
-          }
-          .rdp-nav {
-            display: flex;
-            gap: 5px;
-          }
-          .rdp-nav_button {
-            width: 28px;
-            height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 6px;
-            background: transparent;
-            color: #9ca3af;
-            border: none;
-            cursor: pointer;
-          }
-          .rdp-nav_button:hover {
-            background-color: rgba(255,255,255,0.1);
-            color: white;
-          }
-          .rdp-table {
-            width: 100%;
-            border-collapse: collapse;
-            display: table !important;
-          }
-          .rdp-tbody {
-            display: table-row-group !important;
-          }
-          .rdp-row {
-            display: table-row !important;
-          }
-          .rdp-head {
-            display: table-header-group !important;
-          }
-          .rdp-head_row {
-            display: table-row !important;
-          }
-          .rdp-head_cell {
-            display: table-cell !important;
-            text-align: center;
-            vertical-align: middle;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: #6b7280;
-            height: 30px;
-          }
-          .rdp-cell {
-            display: table-cell !important;
-            text-align: center;
-            vertical-align: middle;
-            padding: 0;
-          }
-          .rdp-day {
-            width: 36px;
-            height: 36px;
-            margin: 2px auto;
-            border-radius: 8px;
-            display: flex !important;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.9rem;
-            color: #e5e7eb;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s;
-          }
-          .rdp-day:hover:not(.rdp-day_selected):not([disabled]) {
-            background-color: rgba(255,255,255,0.1);
-          }
-          .rdp-day_selected {
-            background-color: ${activeColor} !important;
-            color: ${activeTextColor} !important;
-            font-weight: bold;
-          }
-          .rdp-day_today {
-            border: 1px solid ${activeColor};
-            color: ${activeColor};
-            font-weight: bold;
-          }
-          .rdp-day_outside {
-            opacity: 0.25;
-          }
-          .rdp-vhidden {
-            display: none;
-          }
-        `}</style>
-
-        <DayPicker
-          mode="single"
-          selected={parsedDate}
-          onSelect={handleSelect}
-          locale={ptBR}
-          showOutsideDays={true}
-          fixedWeeks={true}
-        />
-
-        {selectedDate && (
-          <button 
-            onClick={() => { onChange(''); onClose(); }}
-            className="flex items-center justify-center gap-2 w-full mt-4 py-2 text-xs font-bold text-red-400 hover:bg-red-500/10 rounded-md transition-colors border border-transparent hover:border-red-500/20"
+        {/* Navegação de Mês */}
+        <div className="flex items-center justify-between px-1 mb-2">
+           <button 
+            onClick={onPrevMonth}
+            className="p-1 hover:bg-white/10 rounded text-gray-400 hover:text-white transition-colors"
           >
-            <XCircle size={14} />
-            Remover Data
+            <ChevronLeft size={18} />
           </button>
-        )}
+          <span className="text-sm font-semibold capitalize text-gray-200">
+            {format(viewDate, 'MMMM yyyy', { locale: ptBR })}
+          </span>
+          <button 
+            onClick={onNextMonth}
+            className="p-1 hover:bg-white/10 rounded text-gray-400 hover:text-white transition-colors"
+          >
+            <ChevronRight size={18} />
+          </button>
+        </div>
+
+        {/* Calendário */}
+        <div className="mb-2">
+          {renderDays()}
+          {renderCells()}
+        </div>
+
+        {/* Footer Actions */}
+        <div className="border-t border-white/5 pt-3 mt-2 flex justify-between">
+            <button
+                onClick={() => handleDayClick(new Date())}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
+            >
+                <CalendarIcon size={14} />
+                Hoje
+            </button>
+            <button
+                onClick={handleClear}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium text-red-400 hover:bg-red-500/10 transition-colors"
+            >
+                <Trash2 size={14} />
+                Limpar
+            </button>
+        </div>
       </div>
     </SmartPopover>
   );

@@ -41,7 +41,6 @@ export default function TaskItem({ node, level, focusedTaskId, actions, onOpenPo
              actions.setFocused(node.id);
         }}
       >
-        {/* Botão de Colapso (Pastas) */}
         <button 
           onClick={(e) => { e.stopPropagation(); actions.update(node.id, { collapsed: !node.collapsed }); }}
           className={`absolute p-1 mt-0.5 text-gray-400 hover:text-white transition-colors duration-200 z-20
@@ -51,7 +50,6 @@ export default function TaskItem({ node, level, focusedTaskId, actions, onOpenPo
           {node.collapsed ? <ChevronRight size={18} /> : <ChevronDown size={18} />}
         </button>
 
-        {/* Checkbox */}
         <button 
           onClick={(e) => { e.stopPropagation(); actions.update(node.id, { done: !node.done }); }} 
           className={`mr-3 mt-0.5 transition-all duration-300 transform active:scale-90 z-10 hover:text-white shrink-0`}
@@ -60,10 +58,8 @@ export default function TaskItem({ node, level, focusedTaskId, actions, onOpenPo
           {isDone ? <Check size={20} strokeWidth={3} /> : <Circle size={20} />}
         </button>
 
-        {/* Conteúdo Principal */}
         <div className="flex-1 flex flex-col min-w-0">
           <div className="flex flex-col gap-1">
-             {/* INPUT DE TEXTO EDITÁVEL (Sem truncar, permite quebra de linha) */}
             <input 
               type="text"
               value={node.text}
@@ -76,16 +72,18 @@ export default function TaskItem({ node, level, focusedTaskId, actions, onOpenPo
             />
             
             {node.dueDate && !isDone && (
-              <span className={`text-[10px] px-1.5 py-0.5 rounded flex items-center gap-1 font-bold w-fit
-                ${isOver ? 'bg-red-500/20 text-red-400' : 'bg-white/10 text-gray-400'}`}>
-                <Calendar size={10} />
+              <button 
+                onClick={(e) => { e.stopPropagation(); onOpenPopover('date', node.id, node.dueDate || ''); }}
+                className={`text-[11px] px-2 py-0.5 rounded flex items-center gap-1.5 font-bold w-fit transition-all duration-200 hover:brightness-110
+                  ${isOver ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' : 'bg-white/10 text-gray-400 hover:bg-white/20 hover:text-gray-200'}`}
+              >
+                <Calendar size={11} />
                 {formatDate(node.dueDate)}
-              </span>
+              </button>
             )}
           </div>
         </div>
 
-        {/* Ações (Hover) */}
         <div className="flex items-center transition-all duration-200 gap-1 pl-2 relative opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 self-start">
           
           <button 
