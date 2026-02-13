@@ -15,7 +15,17 @@
       "all": false,
       "fs": {
         "all": true,
-        "scope": ["$APPDATA/*", "$APPDATA/**"]
+        "readFile": true,
+        "writeFile": true,
+        "readDir": true,
+        "createDir": true,
+        "exists": true,
+        "scope": [
+          "$APPDATA",
+          "$APPDATA/*",
+          "$APPDATA/**",
+          "$RESOURCE/*"
+        ]
       },
       "path": {
         "all": true

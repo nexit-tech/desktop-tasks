@@ -15,7 +15,7 @@ import DatePickerPopover from './ui/DatePickerPopover';
 export default function TaskApp() {
   // Hooks de Sistema (Lógica e Persistência)
   useWindowState();
-  const { tasks, config, addTask, updateTaskProp, removeTask, setConfig } = useTaskSystem();
+  const { tasks, config, isReady, addTask, updateTaskProp, removeTask, setConfig } = useTaskSystem();
 
   // Estado Local de UI
   const [showSettings, setShowSettings] = useState(false);
@@ -26,6 +26,8 @@ export default function TaskApp() {
     nodeId: string;
     value: string;
   } | null>(null);
+
+  if (!isReady) return null;
 
   const actions = {
     update: updateTaskProp,

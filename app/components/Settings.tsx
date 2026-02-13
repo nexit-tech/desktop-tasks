@@ -1,76 +1,94 @@
 import { AppConfig } from '@/types';
-import { useAutoStart } from '@/hooks/useAutoStart';
-import { Monitor, Ghost, ArrowLeft } from 'lucide-react';
+import { X, Check } from 'lucide-react';
+import { HexColorPicker } from 'react-colorful';
 
 interface SettingsProps {
   config: AppConfig;
-  onUpdateConfig: (cfg: AppConfig) => void;
+  onUpdateConfig: (newConfig: AppConfig) => void;
   onClose: () => void;
 }
 
-const COLORS = ['#191919', '#000000', '#1A1D23', '#2B1C2B', '#121726'];
-
 export default function Settings({ config, onUpdateConfig, onClose }: SettingsProps) {
-  const { isEnabled, toggleAutoStart } = useAutoStart();
+  const PRESET_COLORS = [
+    '#191919', '#1e1e2e', '#0f172a', '#171717', 
+    '#27272a', '#2e1065', '#450a0a', '#052e16'
+  ];
 
   return (
-    <div className="space-y-6 p-2 animate-in-up">
-      
-      <div className="bg-white/5 p-4 rounded-xl flex justify-between items-center border border-white/5">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-500/10 rounded-lg text-blue-400">
-            <Monitor size={16} />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-bold text-gray-200">Auto Início</span>
-            <span className="text-[10px] text-gray-500">Abrir com Windows</span>
-          </div>
-        </div>
+    <div className="flex flex-col h-full animate-in fade-in">
+      <div className="flex items-center justify-between mb-6 pl-1">
+        <h2 className="text-xs font-bold tracking-[0.15em] text-white/40 uppercase">
+          Aparência
+        </h2>
         <button 
-          onClick={toggleAutoStart} 
-          className={`w-10 h-6 rounded-full relative transition-all duration-300 ${isEnabled ? 'bg-blue-500 shadow-lg shadow-blue-500/20' : 'bg-white/10'}`}
+          onClick={onClose}
+          className="p-1.5 text-white/40 hover:text-white hover:bg-white/10 rounded-md transition-colors"
         >
-          <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all duration-300 shadow-sm ${isEnabled ? 'left-5' : 'left-1'}`} />
+          <X size={16} />
         </button>
       </div>
 
-      <div>
-        <div className="flex items-center gap-2 mb-3 text-gray-400 px-1">
-          <Ghost size={14} />
-          <label className="text-xs font-bold uppercase tracking-wider">Transparência</label>
+      <div className="space-y-6 flex-1 overflow-y-auto custom-scrollbar pr-2">
+        <div className="space-y-3">
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-gray-300 font-medium">Opacidade da Janela</span>
+            <span className="text-white/40 font-mono text-xs">
+              {Math.round(config.opacity * 100)}%
+            </span>
+          </div>
+          <input
+            type="range"
+            min="0.4"
+            max="1"
+            step="0.01"
+            value={config.opacity}
+            onChange={(e) => onUpdateConfig({ ...config, opacity: parseFloat(e.target.value) })}
+            className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white hover:accent-gray-200 transition-all"
+          />
         </div>
-        <input 
-          type="range" 
-          min="0.2" 
-          max="1" 
-          step="0.05" 
-          value={config.opacity}
-          onChange={(e) => onUpdateConfig({ ...config, opacity: parseFloat(e.target.value) })}
-          className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-blue-500 hover:accent-blue-400 transition-all"
-        />
+
+        <div className="space-y-3">
+          <span className="text-sm text-gray-300 font-medium block">Cor de Fundo</span>
+          
+          <div className="grid grid-cols-4 gap-2 mb-3">
+            {PRESET_COLORS.map((color) => (
+              <button
+                key={color}
+                onClick={() => onUpdateConfig({ ...config, bgColor: color })}
+                className={`h-8 rounded-md transition-all duration-200 border flex items-center justify-center
+                  ${config.bgColor === color ? 'border-white/50 scale-95 shadow-sm' : 'border-transparent hover:scale-105'}`}
+                style={{ backgroundColor: color }}
+              >
+                {config.bgColor === color && <Check size={12} className="text-white drop-shadow-md" />}
+              </button>
+            ))}
+          </div>
+
+          <div className="p-3 bg-white/5 rounded-xl border border-white/5">
+            <HexColorPicker 
+              color={config.bgColor} 
+              onChange={(color) => onUpdateConfig({ ...config, bgColor: color })} 
+              style={{ width: '100%', height: '120px' }}
+            />
+            <div className="flex items-center gap-2 mt-3 pt-3 border-t border-white/5">
+              <div 
+                className="w-6 h-6 rounded border border-white/10 shadow-inner"
+                style={{ backgroundColor: config.bgColor }}
+              />
+              <input 
+                type="text" 
+                value={config.bgColor.toUpperCase()}
+                onChange={(e) => onUpdateConfig({ ...config, bgColor: e.target.value })}
+                className="flex-1 bg-transparent text-xs font-mono text-white/60 focus:text-white outline-none"
+              />
+            </div>
+          </div>
+        </div>
       </div>
       
-      <div>
-        <label className="text-xs font-bold text-gray-500 mb-3 block uppercase tracking-wider px-1">Tema</label>
-        <div className="flex gap-3 justify-center">
-          {COLORS.map(c => (
-            <button 
-              key={c} 
-              onClick={() => onUpdateConfig({...config, bgColor: c})} 
-              className={`w-8 h-8 rounded-full border-2 transition-all duration-300 hover:scale-110 ${config.bgColor === c ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-transparent ring-1 ring-white/10'}`} 
-              style={{background: c}} 
-            />
-          ))}
-        </div>
+      <div className="pt-4 border-t border-white/5 text-[10px] text-white/20 text-center">
+        v0.1.0 • Nexit Tech
       </div>
-
-      <button 
-        onClick={onClose} 
-        className="w-full py-3 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-bold text-white transition-all flex items-center justify-center gap-2 group"
-      >
-        <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
-        VOLTAR
-      </button>
     </div>
   );
 }

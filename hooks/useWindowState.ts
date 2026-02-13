@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { appWindow, LogicalSize, LogicalPosition } from '@tauri-apps/api/window';
-import { writeTextFile, readTextFile, exists, BaseDirectory } from '@tauri-apps/api/fs';
+import { writeTextFile, readTextFile, exists, BaseDirectory, createDir } from '@tauri-apps/api/fs';
 
 const STATE_FILE = 'window_state.json';
 const SAVE_DELAY = 1000;
@@ -13,67 +13,77 @@ interface WindowState {
 }
 
 export const useWindowState = () => {
-  const saveTimeout = useRef<NodeJS.Timeout | null>(null);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
+    let unlistenMove: () => void;
+    let unlistenResize: () => void;
+
     const init = async () => {
       try {
         if (await exists(STATE_FILE, { dir: BaseDirectory.AppData })) {
-          const content = await readTextFile(STATE_FILE, { dir: BaseDirectory.AppData });
-          const state: WindowState = JSON.parse(content);
-
+          const txt = await readTextFile(STATE_FILE, { dir: BaseDirectory.AppData });
+          const state: WindowState = JSON.parse(txt);
+          
           await appWindow.setSize(new LogicalSize(state.width, state.height));
           await appWindow.setPosition(new LogicalPosition(state.x, state.y));
+        } else {
+          // Defaults iniciais caso não exista config
+          await appWindow.center();
         }
-        
-        setTimeout(() => {
-           appWindow.show(); 
-        }, 100);
-        
+
+        // Garante que a janela apareça apenas após posicionar (evita flicker)
+        setTimeout(() => appWindow.show(), 100);
+
       } catch (err) {
-        console.error('Failed to restore window state:', err);
+        console.error('Failed to load window state:', err);
         appWindow.show();
       }
     };
 
-    init();
-  }, []);
-
-  useEffect(() => {
     const saveState = async () => {
       try {
-        const factor = await appWindow.scaleFactor();
-        const size = await appWindow.innerSize();
-        const pos = await appWindow.innerPosition();
+        if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
 
-        const logicalSize = size.toLogical(factor);
-        const logicalPos = pos.toLogical(factor);
+        saveTimeoutRef.current = setTimeout(async () => {
+          try {
+            const position = await appWindow.innerPosition();
+            const size = await appWindow.innerSize();
+            const factor = await appWindow.scaleFactor();
+            const logicalPos = position.toLogical(factor);
+            const logicalSize = size.toLogical(factor);
 
-        const state: WindowState = {
-          x: logicalPos.x,
-          y: logicalPos.y,
-          width: logicalSize.width,
-          height: logicalSize.height
-        };
+            const state: WindowState = {
+              x: logicalPos.x,
+              y: logicalPos.y,
+              width: logicalSize.width,
+              height: logicalSize.height
+            };
 
-        await writeTextFile(STATE_FILE, JSON.stringify(state), { dir: BaseDirectory.AppData });
+            await createDir('', { dir: BaseDirectory.AppData, recursive: true });
+            await writeTextFile(STATE_FILE, JSON.stringify(state), { dir: BaseDirectory.AppData });
+          } catch (e) {
+            console.error('Error saving window state:', e);
+          }
+        }, SAVE_DELAY);
+
       } catch (err) {
-        console.error('Failed to save window state:', err);
+        console.error('Error getting window info:', err);
       }
     };
 
-    const handleUpdate = () => {
-      if (saveTimeout.current) clearTimeout(saveTimeout.current);
-      saveTimeout.current = setTimeout(saveState, SAVE_DELAY);
+    const setupListeners = async () => {
+      unlistenMove = await appWindow.onMoved(saveState);
+      unlistenResize = await appWindow.onResized(saveState);
     };
 
-    const unlistenMove = appWindow.onMoved(handleUpdate);
-    const unlistenResize = appWindow.onResized(handleUpdate);
+    init();
+    setupListeners();
 
     return () => {
-      if (saveTimeout.current) clearTimeout(saveTimeout.current);
-      unlistenMove.then(f => f());
-      unlistenResize.then(f => f());
+      if (unlistenMove) unlistenMove();
+      if (unlistenResize) unlistenResize();
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
     };
   }, []);
 };
