@@ -6,8 +6,19 @@ export default function ResizeHandle() {
   return (
     <div 
       onMouseDown={handleResizeMouseDown}
-      className="absolute bottom-0 right-0 w-8 h-8 cursor-nwse-resize z-50 opacity-0"
+      className="absolute bottom-0 right-0 w-6 h-6 cursor-nwse-resize z-50 flex items-end justify-end p-1.5 text-white/20 hover:text-white/60 transition-colors"
       title="Arraste para redimensionar"
-    />
+    >
+      <svg 
+        width="10" 
+        height="10" 
+        viewBox="0 0 10 10" 
+        fill="none" 
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M9 1L1 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+        <path d="M9 5L5 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      </svg>
+    </div>
   );
 }

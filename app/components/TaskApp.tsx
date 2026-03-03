@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useTaskSystem } from '@/hooks/useTaskSystem';
 import { useWindowState } from '@/hooks/useWindowState';
 import Header from './Header';
@@ -8,16 +8,15 @@ import Settings from './Settings';
 import TaskItem from './TaskItem';
 import InputBar from './InputBar';
 import ResizeHandle from './ResizeHandle';
-import { ListTodo } from 'lucide-react';
+import { ListTodo, Sparkles } from 'lucide-react';
 import ColorPickerPopover from './ui/ColorPickerPopover';
 import DatePickerPopover from './ui/DatePickerPopover';
+import { filterActiveTree } from '@/utils/treeHelpers';
 
 export default function TaskApp() {
-  // Hooks de Sistema (Lógica e Persistência)
   useWindowState();
   const { tasks, config, isReady, addTask, updateTaskProp, removeTask, setConfig } = useTaskSystem();
 
-  // Estado Local de UI
   const [showSettings, setShowSettings] = useState(false);
   const [focusedTaskId, setFocusedTaskId] = useState<string | null>(null);
 
@@ -26,6 +25,8 @@ export default function TaskApp() {
     nodeId: string;
     value: string;
   } | null>(null);
+
+  const activeTasks = useMemo(() => filterActiveTree(tasks), [tasks]);
 
   if (!isReady) return null;
 
@@ -43,12 +44,12 @@ export default function TaskApp() {
 
   return (
     <main 
-      className="flex flex-col h-screen overflow-hidden text-[#dbdee1] shadow-2xl relative transition-all duration-300"
+      className="flex flex-col h-screen overflow-hidden text-[#dbdee1] shadow-2xl relative transition-all duration-500"
       style={{ 
         backgroundColor: config.bgColor, 
         opacity: config.opacity,
         borderRadius: '16px',
-        border: '1px solid rgba(255,255,255,0.05)'
+        border: `1px solid ${config.accentColor || 'rgba(255,255,255,0.05)'}`
       }}
     >
       <Header 
@@ -65,13 +66,18 @@ export default function TaskApp() {
           />
         ) : (
           <div className="space-y-0.5">
-            {tasks.length === 0 && (
-              <div className="flex flex-col items-center justify-center mt-20 opacity-20 gap-3">
-                <ListTodo size={48} strokeWidth={1.5} />
-                <span className="text-xs font-bold uppercase tracking-widest">Organize seu dia</span>
+            {activeTasks.length === 0 && (
+              <div className="flex flex-col items-center justify-center mt-20 opacity-30 gap-4 animate-in fade-in duration-700">
+                <div className="relative">
+                  <Sparkles size={24} className="absolute -top-6 -right-6 text-yellow-400/50 animate-pulse" />
+                  <ListTodo size={56} strokeWidth={1} />
+                </div>
+                <span className="text-xs font-bold uppercase tracking-[0.2em] text-center">
+                  Seu dia está limpo.<br/><span className="text-[10px] font-normal opacity-50">Adicione uma nova tarefa abaixo.</span>
+                </span>
               </div>
             )}
-            {tasks.map(node => (
+            {activeTasks.map(node => (
               <TaskItem 
                 key={node.id} 
                 node={node} 

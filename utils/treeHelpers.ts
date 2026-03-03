@@ -1,11 +1,11 @@
 import { TaskNode } from '@/types';
 
-export const generateId = (): string => Math.random().toString(36).substr(2, 9);
+export const generateId = (): string => Math.random().toString(36).substring(2, 9);
 
 export const updateTree = (nodes: TaskNode[], targetId: string, updateFn: (node: TaskNode) => TaskNode): TaskNode[] => {
   return nodes.map(node => {
     if (node.id === targetId) return updateFn(node);
-    if (node.children.length > 0) {
+    if (node.children && node.children.length > 0) {
       return { ...node, children: updateTree(node.children, targetId, updateFn) };
     }
     return node;
@@ -17,7 +17,7 @@ export const deleteFromTree = (nodes: TaskNode[], targetId: string): TaskNode[] 
     .filter(node => node.id !== targetId)
     .map(node => ({
       ...node,
-      children: deleteFromTree(node.children, targetId)
+      children: deleteFromTree(node.children || [], targetId)
     }));
 };
 
@@ -26,6 +26,15 @@ export const addToTree = (nodes: TaskNode[], parentId: string | null, newNode: T
   return updateTree(nodes, parentId, (node) => ({
     ...node,
     collapsed: false,
-    children: [...node.children, newNode]
+    children: [...(node.children || []), newNode]
   }));
+};
+
+export const filterActiveTree = (nodes: TaskNode[]): TaskNode[] => {
+  return nodes
+    .filter(node => !node.archived)
+    .map(node => ({
+      ...node,
+      children: filterActiveTree(node.children || [])
+    }));
 };

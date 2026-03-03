@@ -1,5 +1,5 @@
-import React from 'react';
-import { Check, X, Palette } from 'lucide-react';
+import { HexColorPicker } from 'react-colorful';
+import { Palette, X, RotateCcw } from 'lucide-react';
 import SmartPopover from './SmartPopover';
 
 interface ColorPickerPopoverProps {
@@ -8,51 +8,61 @@ interface ColorPickerPopoverProps {
   onClose: () => void;
 }
 
-const PRESET_COLORS = [
-  '#ef4444', // Red
-  '#f97316', // Orange
-  '#eab308', // Yellow
-  '#22c55e', // Green
-  '#06b6d4', // Cyan
-  '#3b82f6', // Blue
-  '#a855f7', // Purple
-  '#ec4899', // Pink
-  '#71717a', // Zinc
-  '#ffffff', // White
-];
-
 export default function ColorPickerPopover({ color, onChange, onClose }: ColorPickerPopoverProps) {
+  const PRESET_COLORS = [
+    '#ef4444', '#f97316', '#f59e0b', '#84cc16', '#22c55e',
+    '#06b6d4', '#3b82f6', '#6366f1', '#a855f7', '#ec4899'
+  ];
+
+  const handleClear = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onChange('');
+  };
+
   return (
     <SmartPopover onClose={onClose}>
-      <div className="w-[280px] p-4">
-        <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-2">
-          <div className="flex items-center gap-2 text-gray-200">
-            <Palette size={16} />
-            <span className="text-sm font-semibold">Cor da Tarefa</span>
+      <div className="w-56 p-3 bg-[#1e1e2e]/95 backdrop-blur-md rounded-xl border border-white/10 shadow-2xl animate-in zoom-in-95 duration-200">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2 text-indigo-400">
+            <Palette size={14} />
+            <span className="text-xs font-semibold uppercase tracking-wider">Cor da Tarefa</span>
           </div>
-          <button 
-            onClick={onClose}
-            className="text-gray-500 hover:text-white transition-colors"
-          >
-            <X size={16} />
-          </button>
+          <div className="flex items-center gap-1">
+            {color && (
+              <button 
+                onClick={handleClear}
+                className="p-1 text-white/40 hover:text-white hover:bg-white/10 rounded transition-colors"
+                title="Restaurar Padrão"
+              >
+                <RotateCcw size={14} />
+              </button>
+            )}
+            <button 
+              onClick={(e) => { e.stopPropagation(); onClose(); }}
+              className="p-1 text-white/40 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
+            >
+              <X size={14} />
+            </button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-5 gap-3">
-          {PRESET_COLORS.map((preset) => (
+        <div className="mb-3">
+          <HexColorPicker 
+            color={color || '#ffffff'} 
+            onChange={onChange}
+            style={{ width: '100%', height: '140px' }}
+          />
+        </div>
+
+        <div className="grid grid-cols-5 gap-1.5 pt-3 border-t border-white/5">
+          {PRESET_COLORS.map(preset => (
             <button
               key={preset}
-              onClick={() => onChange(preset)}
-              className={`
-                w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 ring-2 ring-offset-2 ring-offset-[#191919]
-                ${color === preset ? 'ring-white shadow-[0_0_10px_rgba(255,255,255,0.3)]' : 'ring-transparent hover:ring-white/20'}
-              `}
+              onClick={(e) => { e.stopPropagation(); onChange(preset); }}
+              className={`w-full aspect-square rounded-md transition-all hover:scale-110 border ${color === preset ? 'border-white/50 scale-105 shadow-sm' : 'border-transparent shadow-inner'}`}
               style={{ backgroundColor: preset }}
-            >
-              {color === preset && (
-                <Check size={16} className={preset === '#ffffff' ? 'text-black' : 'text-white'} strokeWidth={3} />
-              )}
-            </button>
+              title={preset}
+            />
           ))}
         </div>
       </div>

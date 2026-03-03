@@ -33,32 +33,44 @@ html, body {
 }
 
 @layer utilities {
-  /* Animações Legado */
   .animate-in-up {
-    animation: enter-up 0.3s ease-out forwards;
+    animation: enter-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
   
   .animate-out-down {
-    animation: exit-down 0.2s ease-in forwards;
+    animation: exit-down 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
   @keyframes enter-up {
-    from { opacity: 0; transform: translateY(10px); }
+    from { opacity: 0; transform: translateY(15px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
   @keyframes exit-down {
     from { opacity: 1; transform: translateY(0); }
-    to { opacity: 0; transform: translateY(10px); }
+    to { opacity: 0; transform: translateY(15px); }
   }
 
-  /* Novas Animações para Popovers (Mimetizando tailwindcss-animate) */
-  .animate-in.fade-in {
-    animation: fade-in 0.2s ease-out forwards;
+  .animate-in {
+    animation-duration: 0.3s;
+    animation-fill-mode: forwards;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .animate-in.zoom-in-95 {
-    animation: zoom-in-95 0.2s ease-out cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  .fade-in {
+    animation-name: fade-in;
+  }
+
+  .zoom-in-95 {
+    animation-name: zoom-in-95;
+  }
+
+  .zoom-in {
+    animation-name: zoom-in;
+  }
+
+  .slide-in-from-bottom-2 {
+    animation-name: slide-in-from-bottom-2;
   }
 
   @keyframes fade-in {
@@ -69,5 +81,32 @@ html, body {
   @keyframes zoom-in-95 {
     from { opacity: 0; transform: scale(0.95); }
     to { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes zoom-in {
+    from { opacity: 0; transform: scale(0.3); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes slide-in-from-bottom-2 {
+    from { opacity: 0; transform: translateY(0.5rem); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
   }
 }
