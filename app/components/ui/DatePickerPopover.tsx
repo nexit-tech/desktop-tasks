@@ -68,17 +68,17 @@ export default function DatePickerPopover({ currentDate, onSelect, onClose }: Da
 
   return (
     <SmartPopover onClose={onClose}>
-      <div className="w-64 p-3 bg-[#1e1e2e]/95 backdrop-blur-md rounded-xl border border-white/10 shadow-2xl animate-in zoom-in-95 duration-200">
+      <div className="w-64 p-3 bg-[#2b2d31] rounded-lg border border-[#1e1f22] shadow-2xl animate-in zoom-in-95 duration-200 font-sans text-[#dbdee1]">
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2 text-emerald-400">
+          <div className="flex items-center gap-2 text-[#b5bac1]">
             <CalendarIcon size={14} />
-            <span className="text-xs font-semibold uppercase tracking-wider">Prazo</span>
+            <span className="text-xs font-bold uppercase tracking-wider">Prazo</span>
           </div>
           <div className="flex items-center gap-1">
             {currentDate && (
               <button 
                 onClick={handleClearDate}
-                className="p-1 text-white/40 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
+                className="p-1 text-[#b5bac1] hover:text-[#da373c] hover:bg-[#da373c]/10 rounded transition-colors"
                 title="Remover Data"
               >
                 <X size={14} />
@@ -90,16 +90,16 @@ export default function DatePickerPopover({ currentDate, onSelect, onClose }: Da
         <div className="flex items-center justify-between mb-4 px-1">
           <button 
             onClick={handlePrevMonth}
-            className="p-1 text-white/50 hover:text-white hover:bg-white/10 rounded transition-colors"
+            className="p-1 text-[#b5bac1] hover:text-[#f2f3f5] hover:bg-white/5 rounded transition-colors"
           >
             <ChevronLeft size={16} />
           </button>
-          <span className="text-xs font-medium text-white/90 capitalize">
+          <span className="text-xs font-semibold text-[#f2f3f5] capitalize">
             {monthName}
           </span>
           <button 
             onClick={handleNextMonth}
-            className="p-1 text-white/50 hover:text-white hover:bg-white/10 rounded transition-colors"
+            className="p-1 text-[#b5bac1] hover:text-[#f2f3f5] hover:bg-white/5 rounded transition-colors"
           >
             <ChevronRight size={16} />
           </button>
@@ -107,7 +107,7 @@ export default function DatePickerPopover({ currentDate, onSelect, onClose }: Da
 
         <div className="grid grid-cols-7 gap-1 mb-2">
           {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((day, i) => (
-            <div key={i} className="text-[10px] font-bold text-center text-white/30 py-1">
+            <div key={i} className="text-[10px] font-bold text-center text-[#4e5058] py-1">
               {day}
             </div>
           ))}
@@ -128,12 +128,12 @@ export default function DatePickerPopover({ currentDate, onSelect, onClose }: Da
                   handleSelectDate(day);
                 }}
                 className={`
-                  h-7 text-xs rounded-md flex items-center justify-center transition-all duration-200
+                  h-7 text-xs rounded flex items-center justify-center transition-all duration-200 font-medium
                   ${selected 
-                    ? 'bg-emerald-500 text-white font-bold shadow-[0_0_10px_rgba(16,185,129,0.3)] scale-105' 
+                    ? 'bg-[#5865F2] text-white font-bold shadow-sm scale-105' 
                     : today 
-                      ? 'bg-white/10 text-emerald-400 font-bold border border-emerald-500/30 hover:bg-white/20' 
-                      : 'text-white/70 hover:bg-white/10 hover:text-white'
+                      ? 'bg-[#5865F2]/10 text-[#5865F2] font-bold border border-[#5865F2]/30 hover:bg-[#5865F2]/20' 
+                      : 'text-[#dbdee1] hover:bg-white/5 hover:text-[#f2f3f5]'
                   }
                 `}
               >
@@ -144,7 +144,7 @@ export default function DatePickerPopover({ currentDate, onSelect, onClose }: Da
         </div>
 
         {!currentDate && (
-          <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-center text-[10px] text-white/30 gap-1.5">
+          <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-center text-[10px] text-[#4e5058] gap-1.5 font-medium">
             <Clock size={12} />
             Selecione uma data para o prazo
           </div>

@@ -1,9 +1,11 @@
 import { useEffect, useRef } from 'react';
-import { appWindow, LogicalSize, LogicalPosition } from '@tauri-apps/api/window';
+import { appWindow, LogicalSize, LogicalPosition, currentMonitor } from '@tauri-apps/api/window';
 import { writeTextFile, readTextFile, exists, BaseDirectory, createDir } from '@tauri-apps/api/fs';
 
 const STATE_FILE = 'window_state.json';
 const SAVE_DELAY = 1000;
+const MIN_WIDTH = 400;
+const MIN_HEIGHT = 300;
 
 interface WindowState {
   x: number;
@@ -21,22 +23,42 @@ export const useWindowState = () => {
 
     const init = async () => {
       try {
+        let state: WindowState | null = null;
+
         if (await exists(STATE_FILE, { dir: BaseDirectory.AppData })) {
           const txt = await readTextFile(STATE_FILE, { dir: BaseDirectory.AppData });
-          const state: WindowState = JSON.parse(txt);
-          
-          await appWindow.setSize(new LogicalSize(state.width, state.height));
-          await appWindow.setPosition(new LogicalPosition(state.x, state.y));
+          try {
+            state = JSON.parse(txt);
+          } catch (e) {}
+        }
+
+        const monitor = await currentMonitor();
+
+        if (state && monitor) {
+          const scaleFactor = monitor.scaleFactor;
+          const monWidth = monitor.size.width / scaleFactor;
+          const monHeight = monitor.size.height / scaleFactor;
+          const monX = monitor.position.x / scaleFactor;
+          const monY = monitor.position.y / scaleFactor;
+
+          const w = Math.max(MIN_WIDTH, Math.min(state.width || MIN_WIDTH, monWidth));
+          const h = Math.max(MIN_HEIGHT, Math.min(state.height || MIN_HEIGHT, monHeight));
+
+          const x = Math.max(monX, Math.min(state.x || monX, monX + monWidth - w));
+          const y = Math.max(monY, Math.min(state.y || monY, monY + monHeight - h));
+
+          await appWindow.setSize(new LogicalSize(w, h));
+          await appWindow.setPosition(new LogicalPosition(x, y));
         } else {
-          // Defaults iniciais caso não exista config
+          await appWindow.setSize(new LogicalSize(MIN_WIDTH, MIN_HEIGHT));
           await appWindow.center();
         }
 
-        // Garante que a janela apareça apenas após posicionar (evita flicker)
         setTimeout(() => appWindow.show(), 100);
 
       } catch (err) {
-        console.error('Failed to load window state:', err);
+        await appWindow.setSize(new LogicalSize(MIN_WIDTH, MIN_HEIGHT));
+        await appWindow.center();
         appWindow.show();
       }
     };
@@ -53,6 +75,8 @@ export const useWindowState = () => {
             const logicalPos = position.toLogical(factor);
             const logicalSize = size.toLogical(factor);
 
+            if (logicalSize.width < MIN_WIDTH || logicalSize.height < MIN_HEIGHT) return;
+
             const state: WindowState = {
               x: logicalPos.x,
               y: logicalPos.y,
@@ -62,14 +86,10 @@ export const useWindowState = () => {
 
             await createDir('', { dir: BaseDirectory.AppData, recursive: true });
             await writeTextFile(STATE_FILE, JSON.stringify(state), { dir: BaseDirectory.AppData });
-          } catch (e) {
-            console.error('Error saving window state:', e);
-          }
+          } catch (e) {}
         }, SAVE_DELAY);
 
-      } catch (err) {
-        console.error('Error getting window info:', err);
-      }
+      } catch (err) {}
     };
 
     const setupListeners = async () => {

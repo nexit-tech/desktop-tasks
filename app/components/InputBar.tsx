@@ -20,18 +20,19 @@ export default function InputBar({ onAdd, focusedTaskId, onCancelFocus }: InputB
   };
 
   return (
-    <div className="p-3 pt-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent">
+    <div className="p-3 pt-0 bg-transparent font-sans">
       {focusedTaskId && (
-        <div className="text-[10px] text-emerald-400 mb-1.5 flex justify-between items-center px-1 animate-in slide-in-from-bottom-2 duration-300">
-          <span className="flex items-center gap-1 font-medium tracking-wide">
-            <CornerDownRight size={10} />
+        <div className="text-[10px] text-[#5865F2] mb-1.5 flex justify-between items-center px-1 animate-in slide-in-from-bottom-2 duration-200">
+          <span className="flex items-center gap-1 font-bold tracking-wide uppercase">
+            <CornerDownRight size={12} strokeWidth={2.5} />
             Adicionando sub-tarefa...
           </span>
           <button 
             onClick={onCancelFocus} 
-            className="hover:text-white hover:bg-white/10 p-0.5 rounded transition-colors"
+            className="opacity-50 hover:opacity-100 hover:bg-black/10 p-1 rounded-md transition-all"
+            style={{ color: 'inherit' }}
           >
-            <X size={12} />
+            <X size={12} strokeWidth={2.5} />
           </button>
         </div>
       )}
@@ -42,13 +43,15 @@ export default function InputBar({ onAdd, focusedTaskId, onCancelFocus }: InputB
           onChange={(e) => setText(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={focusedTaskId ? "Digite o nome da sub-tarefa..." : "O que precisa ser feito?"}
-          className="w-full bg-white/5 hover:bg-white/10 focus:bg-white/10 text-sm rounded-xl py-2.5 pl-4 pr-10 outline-none text-white placeholder-white/30 transition-all duration-300 border border-white/5 focus:border-white/20 shadow-inner focus:shadow-[0_0_15px_rgba(255,255,255,0.05)]"
+          className="w-full bg-black/10 hover:bg-black/20 focus:bg-black/20 text-sm font-medium rounded-lg py-2.5 pl-4 pr-10 outline-none transition-all duration-200 border border-black/5 focus:border-[#5865F2]/50 shadow-sm placeholder-current"
+          style={{ color: 'inherit' }}
           autoFocus
         />
         <button 
           onClick={() => { if (text.trim()) { onAdd(text); setText(''); } }} 
-          className={`absolute right-2 p-1.5 rounded-lg transition-all duration-300 flex items-center justify-center
-            ${text.trim() ? 'bg-white/10 text-white hover:bg-white/20 hover:scale-105' : 'text-white/20 hover:text-white/40'}`}
+          className={`absolute right-2 p-1.5 rounded-md transition-all duration-200 flex items-center justify-center
+            ${text.trim() ? 'bg-[#5865F2] text-white hover:bg-[#4752C4] shadow-sm scale-100' : 'opacity-30 hover:opacity-60 scale-95'}`}
+          style={!text.trim() ? { color: 'inherit' } : {}}
         >
           <Plus size={16} strokeWidth={2.5} />
         </button>

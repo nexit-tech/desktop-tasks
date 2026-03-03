@@ -1,5 +1,5 @@
 import { AppConfig } from '@/types';
-import { X, Check, LogOut, Paintbrush } from 'lucide-react';
+import { X, Check, LogOut, Paintbrush, Monitor, Cloud } from 'lucide-react';
 import { HexColorPicker } from 'react-colorful';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
@@ -11,6 +11,15 @@ interface SettingsProps {
   onClose: () => void;
 }
 
+const getContrastYIQ = (hexcolor: string) => {
+  const color = hexcolor.replace('#', '');
+  const r = parseInt(color.substring(0, 2), 16);
+  const g = parseInt(color.substring(2, 2), 16);
+  const b = parseInt(color.substring(4, 2), 16);
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return yiq >= 128 ? 'light' : 'dark';
+};
+
 export default function Settings({ config, onUpdateConfig, onClose }: SettingsProps) {
   const [session, setSession] = useState<Session | null>(null);
   const [email, setEmail] = useState('');
@@ -18,14 +27,32 @@ export default function Settings({ config, onUpdateConfig, onClose }: SettingsPr
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'appearance' | 'account'>('appearance');
 
+  const theme = getContrastYIQ(config.bgColor);
+  const isLight = theme === 'light';
+
+  const colors = {
+    text: isLight ? '#060607' : '#f2f3f5',
+    muted: isLight ? '#4e5058' : '#b5bac1',
+    bg: isLight ? '#f2f3f5' : '#2b2d31',
+    bgSecondary: isLight ? '#e3e5e8' : '#1e1f22',
+    border: isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)',
+    hover: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)',
+    active: isLight ? '#fff' : '#313338',
+    blurple: '#5865F2',
+    blurpleHover: '#4752C4',
+    danger: '#da373c',
+    dangerHover: '#a12828',
+    success: '#23a559'
+  };
+
   const PRESET_COLORS = [
-    '#191919', '#1e1e2e', '#0f172a', '#171717', 
-    '#27272a', '#2e1065', '#450a0a', '#052e16'
+    '#313338', '#2b2d31', '#1e1f22', '#ffffff', 
+    '#f2f3f5', '#2e1065', '#450a0a', '#052e16'
   ];
 
   const PRESET_ACCENTS = [
-    'rgba(255,255,255,0.05)', '#3b82f6', '#10b981', '#f59e0b', 
-    '#ef4444', '#8b5cf6', '#ec4899', '#0ea5e9'
+    'rgba(255,255,255,0.05)', '#5865F2', '#23a559', '#f0b232', 
+    '#da373c', '#eb459e', '#00a8fc', '#5c6bc0'
   ];
 
   useEffect(() => {
@@ -57,42 +84,71 @@ export default function Settings({ config, onUpdateConfig, onClose }: SettingsPr
   };
 
   return (
-    <div className="flex flex-col h-full animate-in fade-in duration-300">
-      <div className="flex items-center justify-between mb-4 pl-1">
-        <h2 className="text-xs font-bold tracking-[0.15em] text-white/40 uppercase flex items-center gap-2">
-          <Paintbrush size={14} />
+    <div className="flex flex-col h-full animate-in fade-in duration-300 font-sans">
+      <div className="flex items-center justify-between mb-6 px-1">
+        <h2 
+          className="text-sm font-bold uppercase tracking-wider flex items-center gap-2"
+          style={{ color: colors.text }}
+        >
+          {activeTab === 'appearance' ? <Monitor size={16} /> : <Cloud size={16} />}
           Configurações
         </h2>
         <button 
           onClick={onClose}
-          className="p-1.5 text-white/40 hover:text-white hover:bg-white/10 rounded-md transition-colors"
+          className="p-1.5 rounded-md transition-all duration-200"
+          style={{ color: colors.muted }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = colors.text;
+            e.currentTarget.style.backgroundColor = colors.hover;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = colors.muted;
+            e.currentTarget.style.backgroundColor = 'transparent';
+          }}
         >
-          <X size={16} />
+          <X size={18} />
         </button>
       </div>
 
-      <div className="flex gap-2 mb-4 border-b border-white/5 pb-2">
+      <div 
+        className="flex gap-1 mb-6 p-1 rounded-lg"
+        style={{ backgroundColor: colors.bgSecondary }}
+      >
         <button 
           onClick={() => setActiveTab('appearance')}
-          className={`text-xs px-3 py-1.5 rounded-md transition-colors ${activeTab === 'appearance' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/80'}`}
+          className="flex-1 text-xs font-semibold px-3 py-2 rounded-md transition-all duration-200 flex items-center justify-center gap-2"
+          style={{ 
+            backgroundColor: activeTab === 'appearance' ? colors.active : 'transparent',
+            color: activeTab === 'appearance' ? colors.text : colors.muted,
+            boxShadow: activeTab === 'appearance' ? `0 1px 3px ${colors.border}` : 'none'
+          }}
         >
+          <Paintbrush size={14} />
           Aparência
         </button>
         <button 
           onClick={() => setActiveTab('account')}
-          className={`text-xs px-3 py-1.5 rounded-md transition-colors ${activeTab === 'account' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/80'}`}
+          className="flex-1 text-xs font-semibold px-3 py-2 rounded-md transition-all duration-200 flex items-center justify-center gap-2"
+          style={{ 
+            backgroundColor: activeTab === 'account' ? colors.active : 'transparent',
+            color: activeTab === 'account' ? colors.text : colors.muted,
+            boxShadow: activeTab === 'account' ? `0 1px 3px ${colors.border}` : 'none'
+          }}
         >
-          Conta & Nuvem
+          <Cloud size={14} />
+          Conta
         </button>
       </div>
 
-      <div className="space-y-6 flex-1 overflow-y-auto custom-scrollbar pr-2">
+      <div className="space-y-8 flex-1 overflow-y-auto custom-scrollbar pr-2 pb-4">
         {activeTab === 'appearance' ? (
           <>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-300 font-medium">Opacidade da Janela</span>
-                <span className="text-white/40 font-mono text-xs">
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-xs font-bold uppercase tracking-wide" style={{ color: colors.muted }}>
+                  Opacidade da Janela
+                </span>
+                <span className="text-xs font-medium px-2 py-1 rounded" style={{ backgroundColor: colors.bgSecondary, color: colors.text }}>
                   {Math.round(config.opacity * 100)}%
                 </span>
               </div>
@@ -103,109 +159,176 @@ export default function Settings({ config, onUpdateConfig, onClose }: SettingsPr
                 step="0.01"
                 value={config.opacity}
                 onChange={(e) => onUpdateConfig({ ...config, opacity: parseFloat(e.target.value) })}
-                className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white hover:accent-gray-200 transition-all"
+                className="w-full h-2 rounded-lg appearance-none cursor-pointer transition-all"
+                style={{ 
+                  backgroundColor: colors.bgSecondary,
+                  accentColor: colors.blurple
+                }}
               />
             </div>
 
-            <div className="space-y-3">
-              <span className="text-sm text-gray-300 font-medium block">Cor de Destaque (Bordas)</span>
-              <div className="grid grid-cols-4 gap-2">
+            <div className="space-y-4 border-t pt-6" style={{ borderColor: colors.border }}>
+              <span className="text-xs font-bold uppercase tracking-wide block" style={{ color: colors.muted }}>
+                Cor de Destaque
+              </span>
+              <div className="grid grid-cols-4 gap-3">
                 {PRESET_ACCENTS.map((color) => (
                   <button
                     key={color}
                     onClick={() => onUpdateConfig({ ...config, accentColor: color })}
-                    className={`h-8 rounded-md transition-all duration-200 border flex items-center justify-center
-                      ${(config.accentColor || 'rgba(255,255,255,0.05)') === color ? 'border-white/50 scale-95 shadow-sm' : 'border-transparent hover:scale-105'}`}
-                    style={{ backgroundColor: color === 'rgba(255,255,255,0.05)' ? '#2a2a2a' : color }}
-                    title={color === 'rgba(255,255,255,0.05)' ? 'Padrão' : color}
+                    className="h-10 rounded-lg transition-all duration-200 border-2 flex items-center justify-center hover:scale-105"
+                    style={{ 
+                      backgroundColor: color === 'rgba(255,255,255,0.05)' ? colors.bgSecondary : color,
+                      borderColor: (config.accentColor || 'rgba(255,255,255,0.05)') === color ? colors.text : 'transparent'
+                    }}
                   >
-                    {(config.accentColor || 'rgba(255,255,255,0.05)') === color && <Check size={12} className="text-white drop-shadow-md" />}
+                    {(config.accentColor || 'rgba(255,255,255,0.05)') === color && (
+                      <Check size={16} color={color === 'rgba(255,255,255,0.05)' ? colors.text : '#fff'} className="drop-shadow-md" />
+                    )}
                   </button>
                 ))}
               </div>
             </div>
 
-            <div className="space-y-3">
-              <span className="text-sm text-gray-300 font-medium block">Cor de Fundo</span>
+            <div className="space-y-4 border-t pt-6" style={{ borderColor: colors.border }}>
+              <span className="text-xs font-bold uppercase tracking-wide block" style={{ color: colors.muted }}>
+                Cor de Fundo
+              </span>
               
-              <div className="grid grid-cols-4 gap-2 mb-3">
+              <div className="grid grid-cols-4 gap-3 mb-4">
                 {PRESET_COLORS.map((color) => (
                   <button
                     key={color}
                     onClick={() => onUpdateConfig({ ...config, bgColor: color })}
-                    className={`h-8 rounded-md transition-all duration-200 border flex items-center justify-center
-                      ${config.bgColor === color ? 'border-white/50 scale-95 shadow-sm' : 'border-transparent hover:scale-105'}`}
-                    style={{ backgroundColor: color }}
+                    className="h-10 rounded-lg transition-all duration-200 border-2 flex items-center justify-center hover:scale-105"
+                    style={{ 
+                      backgroundColor: color,
+                      borderColor: config.bgColor === color ? colors.blurple : colors.border
+                    }}
                   >
-                    {config.bgColor === color && <Check size={12} className="text-white drop-shadow-md" />}
+                    {config.bgColor === color && (
+                      <Check size={16} color={getContrastYIQ(color) === 'light' ? '#000' : '#fff'} className="drop-shadow-md" />
+                    )}
                   </button>
                 ))}
               </div>
 
-              <div className="p-3 bg-white/5 rounded-xl border border-white/5">
+              <div className="p-4 rounded-xl border" style={{ backgroundColor: colors.bgSecondary, borderColor: colors.border }}>
                 <HexColorPicker 
                   color={config.bgColor} 
                   onChange={(color) => onUpdateConfig({ ...config, bgColor: color })} 
-                  style={{ width: '100%', height: '120px' }}
+                  style={{ width: '100%', height: '140px' }}
                 />
-                <div className="flex items-center gap-2 mt-3 pt-3 border-t border-white/5">
+                <div className="flex items-center gap-3 mt-4 pt-4 border-t" style={{ borderColor: colors.border }}>
                   <div 
-                    className="w-6 h-6 rounded border border-white/10 shadow-inner"
-                    style={{ backgroundColor: config.bgColor }}
+                    className="w-8 h-8 rounded-md border shadow-inner"
+                    style={{ backgroundColor: config.bgColor, borderColor: colors.border }}
                   />
                   <input 
                     type="text" 
                     value={config.bgColor.toUpperCase()}
                     onChange={(e) => onUpdateConfig({ ...config, bgColor: e.target.value })}
-                    className="flex-1 bg-transparent text-xs font-mono text-white/60 focus:text-white outline-none"
+                    className="flex-1 text-sm font-mono px-3 py-2 rounded-md outline-none transition-all"
+                    style={{ 
+                      backgroundColor: colors.bg, 
+                      color: colors.text,
+                      border: `1px solid ${colors.border}`
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = colors.blurple}
+                    onBlur={(e) => e.target.style.borderColor = colors.border}
                   />
                 </div>
               </div>
             </div>
           </>
         ) : (
-          <div className="space-y-3">
-            <span className="text-sm text-gray-300 font-medium block">Sincronização na Nuvem</span>
-            <p className="text-xs text-white/40 mb-3">Conecte-se para salvar suas tarefas e acessá-las na versão web.</p>
+          <div className="space-y-4">
+            <span className="text-xs font-bold uppercase tracking-wide block" style={{ color: colors.muted }}>
+              Sincronização na Nuvem
+            </span>
+            <p className="text-sm" style={{ color: colors.muted }}>
+              Conecte-se para salvar suas tarefas e acessá-las de qualquer lugar.
+            </p>
+            
             {session ? (
-              <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5 shadow-inner">
-                <span className="text-xs text-emerald-400 truncate mr-2 font-medium">{session.user.email}</span>
+              <div className="flex items-center justify-between p-4 rounded-xl border mt-4" style={{ backgroundColor: colors.bgSecondary, borderColor: colors.border }}>
+                <div className="flex flex-col">
+                  <span className="text-xs font-semibold uppercase mb-1" style={{ color: colors.muted }}>Conta Conectada</span>
+                  <span className="text-sm font-medium" style={{ color: colors.text }}>{session.user.email}</span>
+                </div>
                 <button 
                   onClick={handleLogout} 
-                  className="p-1.5 text-white/40 hover:text-red-400 hover:bg-red-500/10 rounded-md transition-colors"
-                  title="Sair"
+                  className="p-2 rounded-md transition-colors flex items-center justify-center"
+                  style={{ backgroundColor: 'transparent', color: colors.danger }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = colors.danger;
+                    e.currentTarget.style.color = '#fff';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = colors.danger;
+                  }}
+                  title="Sair da conta"
                 >
-                  <LogOut size={16} />
+                  <LogOut size={18} />
                 </button>
               </div>
             ) : (
-              <form className="space-y-2 p-3 bg-white/5 rounded-xl border border-white/5 shadow-inner">
-                <input
-                  type="email"
-                  placeholder="E-mail"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-black/20 border border-white/5 rounded-md px-3 py-2 text-xs text-white placeholder:text-white/20 outline-none focus:border-white/20 transition-colors"
-                />
-                <input
-                  type="password"
-                  placeholder="Senha"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-black/20 border border-white/5 rounded-md px-3 py-2 text-xs text-white placeholder:text-white/20 outline-none focus:border-white/20 transition-colors"
-                />
-                <div className="flex gap-2 pt-2">
+              <form className="space-y-3 p-4 rounded-xl border mt-4" style={{ backgroundColor: colors.bgSecondary, borderColor: colors.border }}>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold uppercase" style={{ color: colors.muted }}>E-mail</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full rounded-md px-3 py-2.5 text-sm outline-none transition-all"
+                    style={{ 
+                      backgroundColor: colors.bg, 
+                      color: colors.text,
+                      border: `1px solid ${colors.border}`
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = colors.blurple}
+                    onBlur={(e) => e.target.style.borderColor = colors.border}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold uppercase" style={{ color: colors.muted }}>Senha</label>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full rounded-md px-3 py-2.5 text-sm outline-none transition-all"
+                    style={{ 
+                      backgroundColor: colors.bg, 
+                      color: colors.text,
+                      border: `1px solid ${colors.border}`
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = colors.blurple}
+                    onBlur={(e) => e.target.style.borderColor = colors.border}
+                  />
+                </div>
+                <div className="flex gap-3 pt-4">
                   <button
                     onClick={handleLogin}
                     disabled={loading}
-                    className="flex-1 bg-white/10 hover:bg-white/20 text-white text-xs py-2 rounded-md transition-colors disabled:opacity-50 font-medium"
+                    className="flex-1 text-white text-sm font-medium py-2.5 rounded-md transition-colors disabled:opacity-50"
+                    style={{ backgroundColor: colors.blurple }}
+                    onMouseEnter={(e) => { if (!loading) e.currentTarget.style.backgroundColor = colors.blurpleHover; }}
+                    onMouseLeave={(e) => { if (!loading) e.currentTarget.style.backgroundColor = colors.blurple; }}
                   >
                     Entrar
                   </button>
                   <button
                     onClick={handleSignUp}
                     disabled={loading}
-                    className="flex-1 bg-transparent border border-white/10 hover:bg-white/5 text-white text-xs py-2 rounded-md transition-colors disabled:opacity-50"
+                    className="flex-1 text-sm font-medium py-2.5 rounded-md transition-colors disabled:opacity-50 border"
+                    style={{ 
+                      backgroundColor: 'transparent', 
+                      color: colors.text,
+                      borderColor: colors.border
+                    }}
+                    onMouseEnter={(e) => { if (!loading) e.currentTarget.style.backgroundColor = colors.hover; }}
+                    onMouseLeave={(e) => { if (!loading) e.currentTarget.style.backgroundColor = 'transparent'; }}
                   >
                     Registrar
                   </button>
@@ -216,7 +339,7 @@ export default function Settings({ config, onUpdateConfig, onClose }: SettingsPr
         )}
       </div>
       
-      <div className="pt-4 mt-2 border-t border-white/5 flex justify-between items-center text-[10px] text-white/20">
+      <div className="pt-4 mt-2 border-t flex justify-between items-center text-xs font-medium" style={{ borderColor: colors.border, color: colors.muted }}>
         <span>Nexit Tech</span>
         <span>v0.1.3</span>
       </div>

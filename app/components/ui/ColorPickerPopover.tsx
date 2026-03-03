@@ -1,6 +1,7 @@
 import { HexColorPicker } from 'react-colorful';
 import { Palette, X, RotateCcw } from 'lucide-react';
 import SmartPopover from './SmartPopover';
+import { useTaskSystem } from '@/hooks/useTaskSystem';
 
 interface ColorPickerPopoverProps {
   color: string;
@@ -9,9 +10,12 @@ interface ColorPickerPopoverProps {
 }
 
 export default function ColorPickerPopover({ color, onChange, onClose }: ColorPickerPopoverProps) {
+  const { config } = useTaskSystem();
+  const accentColor = config?.accentColor || '#5865F2';
+
   const PRESET_COLORS = [
-    '#ef4444', '#f97316', '#f59e0b', '#84cc16', '#22c55e',
-    '#06b6d4', '#3b82f6', '#6366f1', '#a855f7', '#ec4899'
+    '#da373c', '#f0b232', '#23a559', '#00a8fc', '#5865F2',
+    '#eb459e', '#9b59b6', '#e67e22', '#2ecc71', '#95a5a6'
   ];
 
   const handleClear = (e: React.MouseEvent) => {
@@ -21,17 +25,17 @@ export default function ColorPickerPopover({ color, onChange, onClose }: ColorPi
 
   return (
     <SmartPopover onClose={onClose}>
-      <div className="w-56 p-3 bg-[#1e1e2e]/95 backdrop-blur-md rounded-xl border border-white/10 shadow-2xl animate-in zoom-in-95 duration-200">
+      <div className="w-56 p-3 bg-[#2b2d31] rounded-lg border border-[#1e1f22] shadow-2xl animate-in zoom-in-95 duration-200 font-sans">
         <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2 text-indigo-400">
+          <div className="flex items-center gap-2" style={{ color: accentColor }}>
             <Palette size={14} />
-            <span className="text-xs font-semibold uppercase tracking-wider">Cor da Tarefa</span>
+            <span className="text-xs font-bold uppercase tracking-wider">Cor da Tarefa</span>
           </div>
           <div className="flex items-center gap-1">
             {color && (
               <button 
                 onClick={handleClear}
-                className="p-1 text-white/40 hover:text-white hover:bg-white/10 rounded transition-colors"
+                className="p-1 text-[#b5bac1] hover:text-[#f2f3f5] hover:bg-white/5 rounded transition-colors"
                 title="Restaurar Padrão"
               >
                 <RotateCcw size={14} />
@@ -39,7 +43,7 @@ export default function ColorPickerPopover({ color, onChange, onClose }: ColorPi
             )}
             <button 
               onClick={(e) => { e.stopPropagation(); onClose(); }}
-              className="p-1 text-white/40 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
+              className="p-1 text-[#b5bac1] hover:text-[#da373c] hover:bg-[#da373c]/10 rounded transition-colors"
             >
               <X size={14} />
             </button>
@@ -59,8 +63,11 @@ export default function ColorPickerPopover({ color, onChange, onClose }: ColorPi
             <button
               key={preset}
               onClick={(e) => { e.stopPropagation(); onChange(preset); }}
-              className={`w-full aspect-square rounded-md transition-all hover:scale-110 border ${color === preset ? 'border-white/50 scale-105 shadow-sm' : 'border-transparent shadow-inner'}`}
-              style={{ backgroundColor: preset }}
+              className={`w-full aspect-square rounded-md transition-all hover:scale-110 border ${color === preset ? 'scale-105 shadow-sm' : 'border-transparent shadow-inner'}`}
+              style={{ 
+                backgroundColor: preset,
+                borderColor: color === preset ? '#fff' : 'transparent'
+              }}
               title={preset}
             />
           ))}

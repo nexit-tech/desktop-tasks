@@ -16,14 +16,14 @@ export default function SmartPopover({ onClose, children }: SmartPopoverProps) {
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center w-screen h-screen">
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center w-screen h-screen font-sans">
       
       <div 
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300"
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
         onClick={(e) => { e.stopPropagation(); onClose(); }}
       />
       
-      <div className="relative z-10 bg-[#191919] border border-white/10 rounded-2xl shadow-2xl animate-in zoom-in-95 fade-in duration-300 overflow-hidden max-w-[95vw] max-h-[90vh] flex flex-col">
+      <div className="relative z-10 flex flex-col max-w-[95vw] max-h-[90vh]">
         {children}
       </div>
     </div>
