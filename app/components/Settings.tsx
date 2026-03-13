@@ -1,5 +1,5 @@
 import { AppConfig } from '@/types';
-import { X, Check, LogOut, Paintbrush, Monitor, Cloud } from 'lucide-react';
+import { X, Check, LogOut, Paintbrush } from 'lucide-react';
 import { HexColorPicker } from 'react-colorful';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
@@ -11,15 +11,6 @@ interface SettingsProps {
   onClose: () => void;
 }
 
-const getContrastYIQ = (hexcolor: string) => {
-  const color = hexcolor.replace('#', '');
-  const r = parseInt(color.substring(0, 2), 16);
-  const g = parseInt(color.substring(2, 2), 16);
-  const b = parseInt(color.substring(4, 2), 16);
-  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-  return yiq >= 128 ? 'light' : 'dark';
-};
-
 export default function Settings({ config, onUpdateConfig, onClose }: SettingsProps) {
   const [session, setSession] = useState<Session | null>(null);
   const [email, setEmail] = useState('');
@@ -27,32 +18,14 @@ export default function Settings({ config, onUpdateConfig, onClose }: SettingsPr
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'appearance' | 'account'>('appearance');
 
-  const theme = getContrastYIQ(config.bgColor);
-  const isLight = theme === 'light';
-
-  const colors = {
-    text: isLight ? '#060607' : '#f2f3f5',
-    muted: isLight ? '#4e5058' : '#b5bac1',
-    bg: isLight ? '#f2f3f5' : '#2b2d31',
-    bgSecondary: isLight ? '#e3e5e8' : '#1e1f22',
-    border: isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)',
-    hover: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)',
-    active: isLight ? '#fff' : '#313338',
-    blurple: '#5865F2',
-    blurpleHover: '#4752C4',
-    danger: '#da373c',
-    dangerHover: '#a12828',
-    success: '#23a559'
-  };
-
   const PRESET_COLORS = [
-    '#313338', '#2b2d31', '#1e1f22', '#ffffff', 
-    '#f2f3f5', '#2e1065', '#450a0a', '#052e16'
+    '#313338', '#2b2d31', '#1e1f22', '#111214', 
+    '#ffffff', '#f2f3f5', '#e3e5e8', '#232428'
   ];
 
   const PRESET_ACCENTS = [
-    'rgba(255,255,255,0.05)', '#5865F2', '#23a559', '#f0b232', 
-    '#da373c', '#eb459e', '#00a8fc', '#5c6bc0'
+    'rgba(0,0,0,0.12)', '#5865F2', '#23a559', '#f1c40f', 
+    '#da373c', '#eb459e', '#00b0f4', '#ffffff'
   ];
 
   useEffect(() => {
@@ -84,71 +57,59 @@ export default function Settings({ config, onUpdateConfig, onClose }: SettingsPr
   };
 
   return (
-    <div className="flex flex-col h-full animate-in fade-in duration-300 font-sans">
-      <div className="flex items-center justify-between mb-6 px-1">
-        <h2 
-          className="text-sm font-bold uppercase tracking-wider flex items-center gap-2"
-          style={{ color: colors.text }}
-        >
-          {activeTab === 'appearance' ? <Monitor size={16} /> : <Cloud size={16} />}
+    <div className="flex flex-col h-full animate-in fade-in duration-200">
+      <div className="flex items-center justify-between mb-4 pl-1">
+        <h2 className="text-[11px] font-bold tracking-[0.15em] uppercase flex items-center gap-1.5" style={{ color: 'var(--theme-muted)' }}>
+          <Paintbrush size={14} />
           Configurações
         </h2>
         <button 
           onClick={onClose}
-          className="p-1.5 rounded-md transition-all duration-200"
-          style={{ color: colors.muted }}
+          className="p-1 rounded transition-colors"
+          style={{ color: 'var(--theme-subtle)' }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.color = colors.text;
-            e.currentTarget.style.backgroundColor = colors.hover;
+             e.currentTarget.style.backgroundColor = 'var(--theme-hover)';
+             e.currentTarget.style.color = 'inherit';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.color = colors.muted;
-            e.currentTarget.style.backgroundColor = 'transparent';
+             e.currentTarget.style.backgroundColor = 'transparent';
+             e.currentTarget.style.color = 'var(--theme-subtle)';
           }}
         >
-          <X size={18} />
+          <X size={16} strokeWidth={2.5} />
         </button>
       </div>
 
-      <div 
-        className="flex gap-1 mb-6 p-1 rounded-lg"
-        style={{ backgroundColor: colors.bgSecondary }}
-      >
+      <div className="flex gap-2 mb-4 border-b pb-2" style={{ borderColor: 'var(--theme-border)' }}>
         <button 
           onClick={() => setActiveTab('appearance')}
-          className="flex-1 text-xs font-semibold px-3 py-2 rounded-md transition-all duration-200 flex items-center justify-center gap-2"
+          className="text-[12px] font-medium px-3 py-1.5 rounded transition-colors"
           style={{ 
-            backgroundColor: activeTab === 'appearance' ? colors.active : 'transparent',
-            color: activeTab === 'appearance' ? colors.text : colors.muted,
-            boxShadow: activeTab === 'appearance' ? `0 1px 3px ${colors.border}` : 'none'
+            backgroundColor: activeTab === 'appearance' ? 'var(--theme-hover)' : 'transparent',
+            color: activeTab === 'appearance' ? 'inherit' : 'var(--theme-subtle)'
           }}
         >
-          <Paintbrush size={14} />
           Aparência
         </button>
         <button 
           onClick={() => setActiveTab('account')}
-          className="flex-1 text-xs font-semibold px-3 py-2 rounded-md transition-all duration-200 flex items-center justify-center gap-2"
+          className="text-[12px] font-medium px-3 py-1.5 rounded transition-colors"
           style={{ 
-            backgroundColor: activeTab === 'account' ? colors.active : 'transparent',
-            color: activeTab === 'account' ? colors.text : colors.muted,
-            boxShadow: activeTab === 'account' ? `0 1px 3px ${colors.border}` : 'none'
+            backgroundColor: activeTab === 'account' ? 'var(--theme-hover)' : 'transparent',
+            color: activeTab === 'account' ? 'inherit' : 'var(--theme-subtle)'
           }}
         >
-          <Cloud size={14} />
-          Conta
+          Conta & Nuvem
         </button>
       </div>
 
-      <div className="space-y-8 flex-1 overflow-y-auto custom-scrollbar pr-2 pb-4">
+      <div className="space-y-6 flex-1 overflow-y-auto custom-scrollbar pr-2 pb-4">
         {activeTab === 'appearance' ? (
           <>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-xs font-bold uppercase tracking-wide" style={{ color: colors.muted }}>
-                  Opacidade da Janela
-                </span>
-                <span className="text-xs font-medium px-2 py-1 rounded" style={{ backgroundColor: colors.bgSecondary, color: colors.text }}>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center text-[13px] font-medium">
+                <span>Opacidade da Janela</span>
+                <span className="font-mono text-[11px]" style={{ color: 'var(--theme-subtle)' }}>
                   {Math.round(config.opacity * 100)}%
                 </span>
               </div>
@@ -159,175 +120,139 @@ export default function Settings({ config, onUpdateConfig, onClose }: SettingsPr
                 step="0.01"
                 value={config.opacity}
                 onChange={(e) => onUpdateConfig({ ...config, opacity: parseFloat(e.target.value) })}
-                className="w-full h-2 rounded-lg appearance-none cursor-pointer transition-all"
-                style={{ 
-                  backgroundColor: colors.bgSecondary,
-                  accentColor: colors.blurple
-                }}
+                className="w-full h-1.5 rounded-lg appearance-none cursor-pointer transition-all"
+                style={{ backgroundColor: 'var(--theme-border)', accentColor: '#5865F2' }}
               />
             </div>
 
-            <div className="space-y-4 border-t pt-6" style={{ borderColor: colors.border }}>
-              <span className="text-xs font-bold uppercase tracking-wide block" style={{ color: colors.muted }}>
-                Cor de Destaque
-              </span>
-              <div className="grid grid-cols-4 gap-3">
+            <div className="space-y-2">
+              <span className="text-[13px] font-medium block">Cor de Destaque (Bordas)</span>
+              <div className="grid grid-cols-4 gap-2">
                 {PRESET_ACCENTS.map((color) => (
                   <button
                     key={color}
                     onClick={() => onUpdateConfig({ ...config, accentColor: color })}
-                    className="h-10 rounded-lg transition-all duration-200 border-2 flex items-center justify-center hover:scale-105"
+                    className={`h-8 rounded transition-all duration-200 border flex items-center justify-center
+                      ${(config.accentColor || 'rgba(0,0,0,0.12)') === color ? 'scale-95 shadow-sm' : 'border-transparent hover:scale-105'}`}
                     style={{ 
-                      backgroundColor: color === 'rgba(255,255,255,0.05)' ? colors.bgSecondary : color,
-                      borderColor: (config.accentColor || 'rgba(255,255,255,0.05)') === color ? colors.text : 'transparent'
+                      backgroundColor: color === 'rgba(0,0,0,0.12)' ? 'var(--theme-focus)' : color,
+                      borderColor: (config.accentColor || 'rgba(0,0,0,0.12)') === color ? 'inherit' : 'transparent'
                     }}
+                    title={color === 'rgba(0,0,0,0.12)' ? 'Padrão' : color}
                   >
-                    {(config.accentColor || 'rgba(255,255,255,0.05)') === color && (
-                      <Check size={16} color={color === 'rgba(255,255,255,0.05)' ? colors.text : '#fff'} className="drop-shadow-md" />
-                    )}
+                    {(config.accentColor || 'rgba(0,0,0,0.12)') === color && <Check size={14} color={color === '#ffffff' ? '#000' : '#fff'} className="drop-shadow-sm" strokeWidth={3} />}
                   </button>
                 ))}
               </div>
             </div>
 
-            <div className="space-y-4 border-t pt-6" style={{ borderColor: colors.border }}>
-              <span className="text-xs font-bold uppercase tracking-wide block" style={{ color: colors.muted }}>
-                Cor de Fundo
-              </span>
+            <div className="space-y-2">
+              <span className="text-[13px] font-medium block">Cor de Fundo</span>
               
-              <div className="grid grid-cols-4 gap-3 mb-4">
+              <div className="grid grid-cols-4 gap-2 mb-3">
                 {PRESET_COLORS.map((color) => (
                   <button
                     key={color}
                     onClick={() => onUpdateConfig({ ...config, bgColor: color })}
-                    className="h-10 rounded-lg transition-all duration-200 border-2 flex items-center justify-center hover:scale-105"
+                    className={`h-8 rounded transition-all duration-200 border flex items-center justify-center
+                      ${config.bgColor === color ? 'scale-95 shadow-sm' : 'border-transparent hover:scale-105'}`}
                     style={{ 
                       backgroundColor: color,
-                      borderColor: config.bgColor === color ? colors.blurple : colors.border
+                      borderColor: config.bgColor === color ? 'inherit' : 'var(--theme-border)'
                     }}
                   >
-                    {config.bgColor === color && (
-                      <Check size={16} color={getContrastYIQ(color) === 'light' ? '#000' : '#fff'} className="drop-shadow-md" />
-                    )}
+                    {config.bgColor === color && <Check size={14} color={['#ffffff', '#f2f3f5', '#e3e5e8'].includes(color) ? '#000' : '#fff'} className="drop-shadow-sm" strokeWidth={3} />}
                   </button>
                 ))}
               </div>
 
-              <div className="p-4 rounded-xl border" style={{ backgroundColor: colors.bgSecondary, borderColor: colors.border }}>
+              <div className="p-3 rounded border" style={{ backgroundColor: 'var(--theme-focus)', borderColor: 'var(--theme-border)' }}>
                 <HexColorPicker 
                   color={config.bgColor} 
                   onChange={(color) => onUpdateConfig({ ...config, bgColor: color })} 
-                  style={{ width: '100%', height: '140px' }}
+                  style={{ width: '100%', height: '120px' }}
                 />
-                <div className="flex items-center gap-3 mt-4 pt-4 border-t" style={{ borderColor: colors.border }}>
+                <div className="flex items-center gap-2 mt-3 pt-3 border-t" style={{ borderColor: 'var(--theme-border)' }}>
                   <div 
-                    className="w-8 h-8 rounded-md border shadow-inner"
-                    style={{ backgroundColor: config.bgColor, borderColor: colors.border }}
+                    className="w-6 h-6 rounded shadow-inner"
+                    style={{ backgroundColor: config.bgColor, border: '1px solid var(--theme-border)' }}
                   />
                   <input 
                     type="text" 
                     value={config.bgColor.toUpperCase()}
                     onChange={(e) => onUpdateConfig({ ...config, bgColor: e.target.value })}
-                    className="flex-1 text-sm font-mono px-3 py-2 rounded-md outline-none transition-all"
-                    style={{ 
-                      backgroundColor: colors.bg, 
-                      color: colors.text,
-                      border: `1px solid ${colors.border}`
-                    }}
-                    onFocus={(e) => e.target.style.borderColor = colors.blurple}
-                    onBlur={(e) => e.target.style.borderColor = colors.border}
+                    className="flex-1 bg-transparent text-[12px] font-mono outline-none"
+                    style={{ color: 'inherit' }}
                   />
                 </div>
               </div>
             </div>
           </>
         ) : (
-          <div className="space-y-4">
-            <span className="text-xs font-bold uppercase tracking-wide block" style={{ color: colors.muted }}>
-              Sincronização na Nuvem
-            </span>
-            <p className="text-sm" style={{ color: colors.muted }}>
-              Conecte-se para salvar suas tarefas e acessá-las de qualquer lugar.
+          <div className="space-y-3">
+            <span className="text-[13px] font-medium block">Sincronização na Nuvem</span>
+            <p className="text-[11px] mb-3 leading-relaxed" style={{ color: 'var(--theme-subtle)' }}>
+              Conecte-se para salvar suas tarefas e acessá-las em outros dispositivos.
             </p>
-            
             {session ? (
-              <div className="flex items-center justify-between p-4 rounded-xl border mt-4" style={{ backgroundColor: colors.bgSecondary, borderColor: colors.border }}>
-                <div className="flex flex-col">
-                  <span className="text-xs font-semibold uppercase mb-1" style={{ color: colors.muted }}>Conta Conectada</span>
-                  <span className="text-sm font-medium" style={{ color: colors.text }}>{session.user.email}</span>
-                </div>
+              <div className="flex items-center justify-between p-3 rounded border" style={{ backgroundColor: 'var(--theme-focus)', borderColor: 'var(--theme-border)' }}>
+                <span className="text-[12px] font-medium truncate mr-2" style={{ color: '#23a559' }}>{session.user.email}</span>
                 <button 
                   onClick={handleLogout} 
-                  className="p-2 rounded-md transition-colors flex items-center justify-center"
-                  style={{ backgroundColor: 'transparent', color: colors.danger }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = colors.danger;
-                    e.currentTarget.style.color = '#fff';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                    e.currentTarget.style.color = colors.danger;
-                  }}
-                  title="Sair da conta"
+                  className="p-1.5 rounded transition-colors hover:bg-red-500/10 hover:text-red-500"
+                  style={{ color: 'var(--theme-subtle)' }}
+                  title="Sair"
                 >
-                  <LogOut size={18} />
+                  <LogOut size={14} />
                 </button>
               </div>
             ) : (
-              <form className="space-y-3 p-4 rounded-xl border mt-4" style={{ backgroundColor: colors.bgSecondary, borderColor: colors.border }}>
-                <div className="space-y-1">
-                  <label className="text-xs font-bold uppercase" style={{ color: colors.muted }}>E-mail</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full rounded-md px-3 py-2.5 text-sm outline-none transition-all"
-                    style={{ 
-                      backgroundColor: colors.bg, 
-                      color: colors.text,
-                      border: `1px solid ${colors.border}`
-                    }}
-                    onFocus={(e) => e.target.style.borderColor = colors.blurple}
-                    onBlur={(e) => e.target.style.borderColor = colors.border}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-bold uppercase" style={{ color: colors.muted }}>Senha</label>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full rounded-md px-3 py-2.5 text-sm outline-none transition-all"
-                    style={{ 
-                      backgroundColor: colors.bg, 
-                      color: colors.text,
-                      border: `1px solid ${colors.border}`
-                    }}
-                    onFocus={(e) => e.target.style.borderColor = colors.blurple}
-                    onBlur={(e) => e.target.style.borderColor = colors.border}
-                  />
-                </div>
-                <div className="flex gap-3 pt-4">
+              <form className="space-y-2 p-3 rounded border" style={{ backgroundColor: 'var(--theme-focus)', borderColor: 'var(--theme-border)' }}>
+                <input
+                  type="email"
+                  placeholder="E-mail"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full rounded px-3 py-2 text-[12px] outline-none transition-colors border"
+                  style={{ 
+                    backgroundColor: 'var(--theme-hover)', 
+                    color: 'inherit',
+                    borderColor: 'transparent'
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#5865F2'}
+                  onBlur={(e) => e.target.style.borderColor = 'transparent'}
+                />
+                <input
+                  type="password"
+                  placeholder="Senha"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full rounded px-3 py-2 text-[12px] outline-none transition-colors border"
+                  style={{ 
+                    backgroundColor: 'var(--theme-hover)', 
+                    color: 'inherit',
+                    borderColor: 'transparent'
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#5865F2'}
+                  onBlur={(e) => e.target.style.borderColor = 'transparent'}
+                />
+                <div className="flex gap-2 pt-2">
                   <button
                     onClick={handleLogin}
                     disabled={loading}
-                    className="flex-1 text-white text-sm font-medium py-2.5 rounded-md transition-colors disabled:opacity-50"
-                    style={{ backgroundColor: colors.blurple }}
-                    onMouseEnter={(e) => { if (!loading) e.currentTarget.style.backgroundColor = colors.blurpleHover; }}
-                    onMouseLeave={(e) => { if (!loading) e.currentTarget.style.backgroundColor = colors.blurple; }}
+                    className="flex-1 text-white text-[12px] font-medium py-2 rounded transition-colors disabled:opacity-50"
+                    style={{ backgroundColor: '#5865F2' }}
+                    onMouseEnter={(e) => { if (!loading) e.currentTarget.style.backgroundColor = '#4752c4'; }}
+                    onMouseLeave={(e) => { if (!loading) e.currentTarget.style.backgroundColor = '#5865F2'; }}
                   >
                     Entrar
                   </button>
                   <button
                     onClick={handleSignUp}
                     disabled={loading}
-                    className="flex-1 text-sm font-medium py-2.5 rounded-md transition-colors disabled:opacity-50 border"
-                    style={{ 
-                      backgroundColor: 'transparent', 
-                      color: colors.text,
-                      borderColor: colors.border
-                    }}
-                    onMouseEnter={(e) => { if (!loading) e.currentTarget.style.backgroundColor = colors.hover; }}
+                    className="flex-1 text-[12px] font-medium py-2 rounded transition-colors disabled:opacity-50 border"
+                    style={{ backgroundColor: 'transparent', borderColor: 'var(--theme-border)', color: 'inherit' }}
+                    onMouseEnter={(e) => { if (!loading) e.currentTarget.style.backgroundColor = 'var(--theme-hover)'; }}
                     onMouseLeave={(e) => { if (!loading) e.currentTarget.style.backgroundColor = 'transparent'; }}
                   >
                     Registrar
@@ -337,11 +262,6 @@ export default function Settings({ config, onUpdateConfig, onClose }: SettingsPr
             )}
           </div>
         )}
-      </div>
-      
-      <div className="pt-4 mt-2 border-t flex justify-between items-center text-xs font-medium" style={{ borderColor: colors.border, color: colors.muted }}>
-        <span>Nexit Tech</span>
-        <span>v0.1.3</span>
       </div>
     </div>
   );

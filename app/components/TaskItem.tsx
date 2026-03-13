@@ -22,19 +22,17 @@ export default function TaskItem({ node, level, focusedTaskId, actions, onOpenPo
   const isOver = isOverdue(node.dueDate);
 
   const indentSize = 24;
-  const paddingLeft = level * indentSize + 12; 
-  const collapseIconPos = level * indentSize + 2;
+  const paddingLeft = level * indentSize + 8; 
+  const collapseIconPos = level * indentSize;
   
   const taskColor = node.color || undefined;
-  const displayColor = isDone ? (taskColor || 'inherit') : taskColor;
+  const displayColor = isDone ? (taskColor || 'currentColor') : taskColor;
 
   return (
-    <div className="animate-in fade-in zoom-in-95 duration-200 relative font-sans">
+    <div className="relative">
       <div 
-        className={`group relative flex items-start py-2.5 px-3 my-0.5 rounded-lg transition-all duration-200 border border-transparent
-          ${focusedTaskId === node.id 
-            ? 'bg-black/20 border-black/10 shadow-sm backdrop-blur-sm' 
-            : 'hover:bg-black/10'}
+        className={`group relative flex items-start py-1.5 px-2 my-[1px] rounded transition-colors duration-150 border border-transparent cursor-pointer
+          ${focusedTaskId === node.id ? 'bg-[var(--theme-focus)]' : 'hover:bg-[var(--theme-hover)]'}
           ${isDone ? 'opacity-60 hover:opacity-100' : 'opacity-100'}
         `}
         style={{ paddingLeft: `${paddingLeft + 24}px` }}
@@ -45,60 +43,59 @@ export default function TaskItem({ node, level, focusedTaskId, actions, onOpenPo
       >
         <button 
           onClick={(e) => { e.stopPropagation(); actions.update(node.id, { collapsed: !node.collapsed }); }}
-          className={`absolute p-1 mt-0.5 opacity-40 hover:opacity-100 transition-opacity duration-200 z-20
-            ${node.children && node.children.length === 0 ? 'hidden' : 'block'}`}
-          style={{ left: `${collapseIconPos}px` }}
+          className={`absolute p-0.5 mt-0.5 transition-colors duration-150 z-20 hover:bg-[var(--theme-hover)] rounded
+            ${node.children && node.children.length === 0 ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+          style={{ left: `${collapseIconPos}px`, color: 'var(--theme-muted)' }}
         >
           {node.collapsed ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
         </button>
 
         <button 
           onClick={(e) => { e.stopPropagation(); actions.update(node.id, { done: !node.done }); }} 
-          className="mr-3 mt-0.5 transition-all duration-300 transform active:scale-75 z-10 opacity-70 hover:opacity-100 shrink-0 relative"
-          style={{ color: displayColor }}
+          className="mr-3 mt-[3px] transition-transform duration-200 active:scale-75 z-10 shrink-0 relative flex items-center justify-center"
+          style={{ color: isDone ? displayColor : (displayColor || 'var(--theme-muted)') }}
         >
-          <div className={`absolute inset-0 bg-current rounded-full transition-transform duration-300 ease-out ${isDone ? 'scale-100 opacity-20' : 'scale-0 opacity-0'}`} />
-          {isDone ? <Check size={18} strokeWidth={3} className="animate-in zoom-in duration-200" /> : <Circle size={18} className="transition-transform hover:scale-110" />}
+          {isDone ? (
+            <Check size={18} strokeWidth={3} className="animate-in zoom-in duration-200" />
+          ) : (
+            <Circle size={18} strokeWidth={2} className="opacity-70 group-hover:opacity-100 transition-opacity" />
+          )}
         </button>
 
-        <div className="flex-1 flex flex-col min-w-0">
-          <div className="flex flex-col gap-1.5 relative">
+        <div className="flex-1 flex flex-col min-w-0 justify-center">
+          <div className="flex flex-col gap-0.5 relative">
             <input 
               type="text"
               value={node.text}
               onChange={(e) => actions.update(node.id, { text: e.target.value })}
-              className={`text-sm font-medium bg-transparent outline-none w-full break-words whitespace-pre-wrap transition-all duration-300
-                ${isDone ? 'opacity-50' : 'opacity-90'} 
-                ${focusedTaskId === node.id ? 'opacity-100' : ''}
+              className={`text-[13px] font-medium bg-transparent outline-none w-full break-words whitespace-pre-wrap transition-colors duration-200
+                ${isDone ? 'line-through' : ''}
               `}
               style={{ 
-                color: displayColor,
-                textDecoration: isDone ? 'line-through' : 'none',
-                textDecorationColor: 'currentColor'
+                color: displayColor || 'inherit',
+                textDecorationColor: displayColor || 'inherit'
               }}
             />
             
             {node.dueDate && !isDone && (
               <button 
                 onClick={(e) => { e.stopPropagation(); onOpenPopover('date', node.id, node.dueDate || ''); }}
-                className={`text-[10px] px-2 py-0.5 rounded-md flex items-center gap-1.5 font-bold w-fit transition-all duration-200 uppercase tracking-wider
-                  ${isOver 
-                    ? 'bg-[#da373c]/20 text-[#da373c] hover:bg-[#da373c]/30 border border-[#da373c]/30' 
-                    : 'bg-black/20 opacity-70 hover:opacity-100 border border-black/10'}`}
+                className={`text-[10px] px-1.5 py-0.5 rounded-sm flex items-center gap-1 font-bold w-fit transition-colors duration-150 mt-0.5
+                  ${isOver ? 'bg-red-500/20 text-red-500 hover:bg-red-500/30' : 'bg-[var(--theme-hover)] hover:bg-[var(--theme-focus)]'}`}
+                style={{ color: isOver ? '' : 'var(--theme-subtle)' }}
               >
-                <Calendar size={10} />
+                <Calendar size={10} strokeWidth={2.5} />
                 {formatDate(node.dueDate)}
               </button>
             )}
           </div>
         </div>
 
-        <div className="flex items-center transition-all duration-200 gap-1 pl-2 relative opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 self-start">
-          
+        <div className="flex items-center gap-0.5 pl-2 relative opacity-0 translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-150 self-start mt-0.5">
           <button 
-            onClick={(e) => { e.stopPropagation(); onOpenPopover('color', node.id, node.color || '#ffffff'); }}
-            className="p-1.5 rounded-md transition-colors opacity-50 hover:opacity-100 hover:bg-black/20"
-            style={{ color: taskColor }}
+            onClick={(e) => { e.stopPropagation(); onOpenPopover('color', node.id, node.color || ''); }}
+            className="p-1 rounded transition-colors hover:bg-[var(--theme-hover)]"
+            style={{ color: taskColor || 'var(--theme-muted)' }}
             title="Cor da Tarefa"
           >
             <Palette size={14} />
@@ -106,8 +103,8 @@ export default function TaskItem({ node, level, focusedTaskId, actions, onOpenPo
           
           <button 
             onClick={(e) => { e.stopPropagation(); onOpenPopover('date', node.id, node.dueDate || ''); }}
-            className={`p-1.5 rounded-md transition-colors hover:bg-black/20
-              ${node.dueDate ? 'opacity-100' : 'opacity-50 hover:opacity-100'}`}
+            className="p-1 rounded transition-colors hover:bg-[var(--theme-hover)]"
+            style={{ color: node.dueDate ? 'inherit' : 'var(--theme-muted)' }}
             title="Definir Data"
           >
             <Calendar size={14} />
@@ -116,7 +113,8 @@ export default function TaskItem({ node, level, focusedTaskId, actions, onOpenPo
           <button 
             onClick={(e) => { e.stopPropagation(); actions.setFocused(node.id); }}
             title="Criar Sub-tarefa"
-            className="p-1.5 rounded-md opacity-50 hover:opacity-100 hover:bg-black/20 transition-colors"
+            className="p-1 rounded transition-colors hover:bg-[var(--theme-hover)]"
+            style={{ color: 'var(--theme-muted)' }}
           >
             <CornerDownRight size={14} />
           </button>
@@ -125,7 +123,7 @@ export default function TaskItem({ node, level, focusedTaskId, actions, onOpenPo
             <button 
               onClick={(e) => { e.stopPropagation(); actions.update(node.id, { archived: true }); }}
               title="Arquivar Tarefa Concluída"
-              className="p-1.5 rounded-md opacity-50 hover:opacity-100 hover:text-[#23a559] hover:bg-[#23a559]/10 transition-colors"
+              className="p-1 rounded transition-colors hover:bg-emerald-500/20 text-emerald-500"
             >
               <Archive size={14} />
             </button>
@@ -133,7 +131,7 @@ export default function TaskItem({ node, level, focusedTaskId, actions, onOpenPo
             <button 
               onClick={(e) => { e.stopPropagation(); actions.removeTask(node.id); }}
               title="Excluir"
-              className="p-1.5 rounded-md opacity-50 hover:opacity-100 hover:text-[#da373c] hover:bg-[#da373c]/10 transition-colors"
+              className="p-1 rounded transition-colors hover:bg-red-500/20 text-red-500"
             >
               <Trash2 size={14} />
             </button>
@@ -141,12 +139,15 @@ export default function TaskItem({ node, level, focusedTaskId, actions, onOpenPo
         </div>
       </div>
 
-      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${node.collapsed ? 'max-h-0 opacity-0' : 'max-h-[2000px] opacity-100'}`}>
+      <div className={`overflow-hidden transition-all duration-200 ease-in-out ${node.collapsed ? 'max-h-0 opacity-0' : 'max-h-[2000px] opacity-100'}`}>
         {!node.collapsed && node.children && node.children.length > 0 && (
           <div className="relative">
             <div 
-                className="absolute top-0 bottom-2 w-px bg-black/10" 
-                style={{ left: `${level * indentSize + 34}px` }} 
+                className="absolute top-0 bottom-1 w-[1px]" 
+                style={{ 
+                  left: `${level * indentSize + 22}px`,
+                  backgroundColor: 'var(--theme-border)'
+                }} 
             />
             {node.children.map(child => (
               <TaskItem 

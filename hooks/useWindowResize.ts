@@ -1,51 +1,40 @@
-import { appWindow, LogicalSize } from '@tauri-apps/api/window';
-import { MouseEvent } from 'react';
+import { appWindow, PhysicalSize } from '@tauri-apps/api/window';
+import { MouseEvent as ReactMouseEvent } from 'react';
 
 export const useWindowResize = () => {
-  const handleResizeMouseDown = async (e: MouseEvent) => {
+  const handleResizeMouseDown = async (e: ReactMouseEvent) => {
     e.preventDefault();
-    e.stopPropagation();
     
-    const startX = e.screenX;
-    const startY = e.screenY;
+    const scaleFactor = await appWindow.scaleFactor();
+    const initialSize = await appWindow.innerSize();
     
-    const factor = await appWindow.scaleFactor();
-    const physicalSize = await appWindow.innerSize();
-    const startWidth = physicalSize.width / factor;
-    const startHeight = physicalSize.height / factor;
+    const startX = e.clientX;
+    const startY = e.clientY;
 
     let animationFrameId: number;
 
-    const handleMouseMove = (ev: globalThis.MouseEvent) => {
-      ev.preventDefault();
+    const handleMouseMove = (ev: MouseEvent) => {
+      const deltaX = (ev.clientX - startX) * scaleFactor;
+      const deltaY = (ev.clientY - startY) * scaleFactor;
       
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-      }
+      const newWidth = Math.max(initialSize.width + deltaX, 350 * scaleFactor);
+      const newHeight = Math.max(initialSize.height + deltaY, 400 * scaleFactor);
 
-      animationFrameId = requestAnimationFrame(async () => {
-        const deltaX = ev.screenX - startX;
-        const deltaY = ev.screenY - startY;
-
-        await appWindow.setSize(
-          new LogicalSize(
-            Math.max(400, startWidth + deltaX),
-            Math.max(300, startHeight + deltaY)
-          )
-        );
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+      
+      animationFrameId = requestAnimationFrame(() => {
+        appWindow.setSize(new PhysicalSize(newWidth, newHeight));
       });
     };
 
     const handleMouseUp = () => {
-      if (animationFrameId) cancelAnimationFrame(animationFrameId);
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
-      document.body.style.cursor = '';
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
     };
 
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleMouseUp);
-    document.body.style.cursor = 'nwse-resize';
   };
 
   return { handleResizeMouseDown };
